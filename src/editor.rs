@@ -22,7 +22,7 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (350, 500))
+    ViziaState::new(|| (400, 550))
 }
 
 pub(crate) fn create(
@@ -44,22 +44,27 @@ pub(crate) fn create(
         ResizeHandle::new(cx);
 
         VStack::new(cx, |cx| {
-            PeakMeter::new(
-                cx,
-                Data::peak_meter
-                    .map(|peak_meter| nih_plug::prelude::util::gain_to_db(peak_meter.load(Ordering::Relaxed))),
-                Some(Duration::from_millis(600)),
-            )
-            .height(Pixels(50.0))
-            .child_top(Stretch(1.0))
-            .child_bottom(Stretch(1.0));
+            // TODO: Implement waveform display
+            // PeakMeter::new(
+            //     cx,
+            //     Data::peak_meter
+            //         .map(|peak_meter| nih_plug::prelude::util::gain_to_db(peak_meter.load(Ordering::Relaxed))),
+            //     Some(Duration::from_millis(600)),
+            // )
+            // .child_top(Stretch(1.0))
+            // .child_bottom(Stretch(1.0))
+            // .width(Percentage(100.0))
+            // .height(Pixels(50.0))
+            // .background_color(Color::rgb(200, 200, 200));
 
             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                 macro_rules! hstack {
                     ($cx:ident, $f:expr) => {
                         HStack::new($cx, $f)
                         .child_top(Stretch(1.0))
-                        .col_between(Pixels(5.0))
+                        .child_bottom(Stretch(1.0))
+                        .col_between(Pixels(10.0))
+                        .left(Pixels(10.0))
                     };
                 }
                 macro_rules! slider {
@@ -78,25 +83,35 @@ pub(crate) fn create(
                         })
                     };
                 }
+                macro_rules! label {
+                    ($cx:ident, $label:expr) => {
+                        HStack::new($cx, |cx| {
+                            Label::new(cx, $label)
+                            .font_size(24.0);
+                        })
+                        .child_space(Stretch(1.0));
+                    };
+                }
 
+                label!(cx, "Mix");
                 slider!(cx, "Mix", mix);
                 button!(cx, "Hard Clip Output", output_clip);
                 slider!(cx, "Output Clip Threshold", output_clip_threshold);
 
-                Label::new(cx, "Waveshaper");
+                label!(cx, "Waveshaper");
                 slider!(cx, "Pre Gain", pre_gain);
                 slider!(cx, "Function Mix", function_mix);
                 slider!(cx, "Function Type", function_type);
                 slider!(cx, "Function Parameter", function_param);
                 slider!(cx, "Post Gain", post_gain);
 
-                Label::new(cx, "Rectify");
+                label!(cx, "Rectify");
                 button!(cx, "Rectify", rectify);
                 slider!(cx, "Rectify Mix", rectify_mix);
                 slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
                 slider!(cx, "Rectify Type", rectify_type);
 
-                Label::new(cx, "Filter");
+                label!(cx, "Filter");
                 slider!(cx, "Excess Mix", excess_mix);
                 slider!(cx, "Low Pass", low_pass);
                 slider!(cx, "Low Pass Q", low_pass_q);
@@ -104,8 +119,7 @@ pub(crate) fn create(
                 slider!(cx, "High Pass Q", high_pass_q);
                 button!(cx, "Excess Signal Bypass", excess_bypass);
             })
-            .width(Percentage(100.0))
-            .top(Pixels(8.0));
+            .width(Percentage(100.0));
 
             Label::new(cx, &format!(
                 "{} by {} v{}",
