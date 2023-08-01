@@ -10,6 +10,6 @@ if ($to -eq $null) {
     Write-Host "VST3_DIR is not set. Skipping moving the VST3 file."
     exit 0
 }
-gsudo Move-Item $build $to -Force
+gsudo Copy-Item $build $to -Force
 # Open Ableton
 Start-Process "C:\ProgramData\Ableton\Live 11 Suite\Program\Ableton Live 11 Suite.exe"
