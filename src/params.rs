@@ -19,11 +19,11 @@ pub struct PenareParams {
     pub mix: FloatParam,
     /// (Hard) clip the final output (after everything)
     /// Essentially turning some of the clipping types into distortion
-    #[id = "clip-output"]
-    pub clip_output: BoolParam,
+    #[id = "output-clip"]
+    pub output_clip: BoolParam,
     /// Final clip threshold
-    #[id = "clip-output-value"]
-    pub clip_output_value: FloatParam,
+    #[id = "output-clip-threshold"]
+    pub output_clip_threshold: FloatParam,
 
     /// Pre gain before waveshaping in decibels
     #[id = "pre-gain"]
@@ -143,8 +143,8 @@ impl Default for PenareParams {
             editor_state: editor::default_state(),
 
             mix: percentage!("Mix", 1.0),
-            clip_output: BoolParam::new("Clip Output", true),
-            clip_output_value: db!("Clip Output Value", 1.0),
+            output_clip: BoolParam::new("Output Clip", false),
+            output_clip_threshold: db!("Output Clip Threshold", 30.0),
 
             pre_gain: db!("Pre Gain", 30.0),
             function_mix: percentage!("Function Mix", 1.0),

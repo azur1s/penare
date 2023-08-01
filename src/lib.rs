@@ -139,8 +139,8 @@ impl Plugin for Penare {
             let num_samples = channel_samples.len();
 
             let mix = self.params.mix.smoothed.next();
-            let clip_output = self.params.clip_output.value();
-            let clip_output_value = self.params.clip_output_value.value();
+            let output_clip = self.params.output_clip.value();
+            let output_clip_threshold = self.params.output_clip_threshold.smoothed.next();
 
             let pre_gain = self.params.pre_gain.smoothed.next();
             let function_mix = self.params.function_mix.smoothed.next();
@@ -222,8 +222,8 @@ impl Plugin for Penare {
                 *sample = mix_between(dry, *sample, mix);
 
                 // Final clip
-                if clip_output {
-                    *sample = waveshaper::FunctionType::Hard.apply(*sample, clip_output_value);
+                if output_clip {
+                    *sample = waveshaper::FunctionType::Hard.apply(*sample, output_clip_threshold);
                 }
 
                 // Calculate amplitude (for peak meter)

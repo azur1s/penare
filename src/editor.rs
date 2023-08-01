@@ -80,8 +80,8 @@ pub(crate) fn create(
                 }
 
                 slider!(cx, "Mix", mix);
-                button!(cx, "Hard Clip Output", clip_output);
-                slider!(cx, "Output Clip Threshold", clip_output_value);
+                button!(cx, "Hard Clip Output", output_clip);
+                slider!(cx, "Output Clip Threshold", output_clip_threshold);
 
                 Label::new(cx, "Waveshaper");
                 slider!(cx, "Pre Gain", pre_gain);
