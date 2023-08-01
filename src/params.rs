@@ -20,6 +20,13 @@ pub struct PenareParams {
     /// Clipping types
     #[id = "clip-type"]
     pub clip_type: EnumParam<clip::ClipType>,
+    /// (Hard) clip the final output (after everything)
+    /// Essentially turning some of the clipping types into distortion
+    #[id = "clip-output"]
+    pub clip_output: BoolParam,
+    /// Use 1.0 as threshold for final clipping
+    #[id = "clip-output-value"]
+    pub clip_output_value: BoolParam, // true = 1.0, false = threshold
 
     /// Pre gain before clip parameter in decibels
     #[id = "pre-gain"]
@@ -124,6 +131,8 @@ impl Default for PenareParams {
             pre_gain: db!("Pre Gain", 30.0),
             threshold: db!("Threshold", 30.0),
             post_gain: db!("Post Gain", 30.0),
+            clip_output: BoolParam::new("Clip Output", true),
+            clip_output_value: BoolParam::new("Clip Output Value", true),
 
             excess_mix: percentage!("Excess Mix", 0.0),
             low_pass: hz!("Low Pass", 1000.0),

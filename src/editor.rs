@@ -22,7 +22,7 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (300, 400))
+    ViziaState::new(|| (350, 500))
 }
 
 pub(crate) fn create(
@@ -55,18 +55,34 @@ pub(crate) fn create(
             .child_bottom(Stretch(1.0));
 
             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                macro_rules! hstack {
+                    ($cx:ident, $f:expr) => {
+                        HStack::new($cx, $f)
+                        .child_top(Stretch(1.0))
+                        .col_between(Pixels(5.0))
+                    };
+                }
                 macro_rules! slider {
                     ($cx:ident, $label:expr, $param:ident) => {
-                        HStack::new($cx, |cx| {
+                        hstack!($cx, |cx| {
                             ParamSlider::new(cx, Data::params, |p| &p.$param);
                             Label::new(cx, $label);
                         })
-                        .child_top(Stretch(1.0))
-                        .child_bottom(Stretch(1.0))
-                        .child_space(Pixels(8.0))
                     };
                 }
+                macro_rules! button {
+                    ($cx:ident, $label:expr, $param:ident) => {
+                        hstack!($cx, |cx| {
+                            ParamButton::new(cx, Data::params, |p| &p.$param);
+                            Label::new(cx, $label);
+                        })
+                    };
+                }
+
                 slider!(cx, "Mix", mix);
+                button!(cx, "Hard Clip Output", clip_output);
+                button!(cx, "Output Clip Threshold = 1", clip_output_value);
+                Label::new(cx, "Clip");
                 slider!(cx, "Type", clip_type);
                 Label::new(cx, "Gain");
                 slider!(cx, "Pre Gain", pre_gain);
@@ -78,13 +94,7 @@ pub(crate) fn create(
                 slider!(cx, "Low Pass Q", low_pass_q);
                 slider!(cx, "High Pass", high_pass);
                 slider!(cx, "High Pass Q", high_pass_q);
-                HStack::new(cx, |cx| {
-                    ParamButton::new(cx, Data::params, |p| &p.excess_bypass);
-                    Label::new(cx, "Excess Signal Bypass");
-                })
-                .child_top(Stretch(1.0))
-                .child_bottom(Stretch(1.0))
-                .child_space(Pixels(8.0));
+                button!(cx, "Excess Signal Bypass", excess_bypass);
             })
             .width(Percentage(100.0))
             .top(Pixels(8.0));

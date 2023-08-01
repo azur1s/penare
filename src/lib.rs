@@ -137,6 +137,9 @@ impl Plugin for Penare {
 
             let mix = self.params.mix.smoothed.next();
             let clip_type = self.params.clip_type.value();
+            let clip_output = self.params.clip_output.value();
+            let clip_output_value = self.params.clip_output_value.value();
+
             let pre_gain = self.params.pre_gain.smoothed.next();
             let threshold = self.params.threshold.smoothed.next();
             let post_gain = self.params.post_gain.smoothed.next();
@@ -153,18 +156,13 @@ impl Plugin for Penare {
                 *sample = s;
 
                 let dry = *sample;
-                // Apply pre-gain
-                *sample *= pre_gain;
-                // Clip
-                *sample = clip_type.apply(*sample, threshold);
-                // Apply post-gain
-                *sample *= post_gain;
+                *sample *= pre_gain; // Pre-gain
+                *sample = clip_type.apply(*sample, threshold); // Clip
+                *sample *= post_gain; // Post-gain
                 // Mix between dry and wet
                 *sample =
                     mix * *sample // Wet signal
                     + (1.0 - mix) * dry; // Dry signal
-                // Calculate amplitude (for peak meter)
-                amplitude += *sample;
 
                 // Filter mix
                 if !excess_bypass {
@@ -180,6 +178,19 @@ impl Plugin for Penare {
                     // Excess signal only
                     *sample = lp_ex + hp_ex;
                 }
+
+                // Final clip
+                if clip_output {
+                    let t = if clip_output_value {
+                        1.0
+                    } else {
+                        threshold
+                    };
+                    *sample = clip::ClipType::Hard.apply(*sample, t);
+                }
+
+                // Calculate amplitude (for peak meter)
+                amplitude += *sample;
             }
 
             // Only calculate the UI-related data if the editor is open.
