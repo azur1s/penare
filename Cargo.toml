@@ -1,0 +1,31 @@
+[package]
+name = "penare"
+version = "0.1.0"
+edition = "2021"
+authors = ["Azur1s <natapat.samutpong@gmail.com>"]
+license = "GPL-3.0-or-later"
+homepage = "https://azur.moe"
+description = "A plugin"
+
+[workspace]
+members = ["xtask"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+atomic_float = "0.1.0"
+crossbeam = "0.8.2"
+# Remove the `assert_process_allocs` feature to allow allocations on the audio
+# thread in debug builds.
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", features = ["assert_process_allocs"] }
+nih_plug_vizia = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+
+[profile.release]
+lto = "thin"
+strip = "symbols"
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = "none"
