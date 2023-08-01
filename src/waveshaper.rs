@@ -3,9 +3,9 @@ use nih_plug::prelude::*;
 #[derive(Clone, Copy, Enum, PartialEq)]
 pub enum FunctionType {
     // Classic hard clip
-    Hard,
+    HardClip,
     // "Scaled" clipping (t * x)
-    Scaled,
+    ScaledClip,
     // tanh(2x) * t
     TwoTanh,
     // I don't know what is this
@@ -24,8 +24,8 @@ impl FunctionType {
         let xa = x.abs();
         let c = |x: f32| x.min(a).max(-a);
         match self {
-            Hard       => c(x),
-            Scaled     => c(x * a),
+            HardClip   => c(x),
+            ScaledClip => c(x * a),
             TwoTanh    => (2.0 * x).tanh() * a,
             Reciprocal => 2.0 * sig * (a - (a / (xa + 1.0))),
             // Softdrive generate some white noise when clipping
@@ -46,8 +46,8 @@ impl FunctionType {
 impl std::fmt::Display for FunctionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            FunctionType::Hard         => write!(f, "Hard"),
-            FunctionType::Scaled       => write!(f, "Scaled"),
+            FunctionType::HardClip     => write!(f, "HardClip"),
+            FunctionType::ScaledClip   => write!(f, "ScaledClip"),
             FunctionType::TwoTanh      => write!(f, "2Tanh"),
             FunctionType::Reciprocal   => write!(f, "Reciprocal"),
             FunctionType::Softdrive    => write!(f, "Softdrive"),
@@ -66,8 +66,8 @@ mod tests {
         let sample = (5..15).map(|x| x as f32 * 0.05).collect::<Vec<_>>();
         let a = 0.5;
 
-        let hard = sample.iter().map(|x| Hard.apply(*x, a)).collect::<Vec<_>>();
-        let test = sample.iter().map(|x| Scaled.apply(*x, a)).collect::<Vec<_>>();
+        let hard = sample.iter().map(|x| HardClip.apply(*x, a)).collect::<Vec<_>>();
+        let test = sample.iter().map(|x| ScaledClip.apply(*x, a)).collect::<Vec<_>>();
 
         fn fmt(v: &[f32]) -> String {
             v.iter().map(|x| format!("{:6.2}", x)).collect::<Vec<_>>().join("")

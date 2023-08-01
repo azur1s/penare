@@ -148,7 +148,7 @@ impl Default for PenareParams {
 
             pre_gain: db!("Pre Gain", 30.0),
             function_mix: percentage!("Function Mix", 1.0),
-            function_type: EnumParam::new("Function Type", waveshaper::FunctionType::Hard),
+            function_type: EnumParam::new("Function Type", waveshaper::FunctionType::HardClip),
             function_param: db!("Function Parameter", 30.0),
             post_gain: db!("Post Gain", 30.0),
 

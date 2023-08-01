@@ -223,7 +223,7 @@ impl Plugin for Penare {
 
                 // Final clip
                 if output_clip {
-                    *sample = waveshaper::FunctionType::Hard.apply(*sample, output_clip_threshold);
+                    *sample = waveshaper::FunctionType::HardClip.apply(*sample, output_clip_threshold);
                 }
 
                 // Calculate amplitude (for peak meter)
