@@ -11,9 +11,12 @@ use it as an experimental distortion kind-of plugin
 - Pre and Post gain control
 - Filter control (like which range the clipping is applied)
 - Multiple clipping types!!
-  - Hard
+  - Classic Hard Clip
+  - Scaled Clip (idk)
   - 2Tanh (Tanh but multiplied by 2)
   - Repiprocal
+  - Softdrive (huh)
+  - Inv2Tanh (I made this up)
 
 ## Contributing
 Some of the [algorithms](src/clip.rs) probably is not correct so you can fix it if you think it's incorrect. Or you can add new one if you're feeling generous :D
