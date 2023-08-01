@@ -2,11 +2,14 @@ use std::sync::Arc;
 use nih_plug::prelude::*;
 
 mod params;
-mod clip;
+mod waveshaper;
+mod rectify;
 mod filter;
 mod editor;
+mod utils;
 
 use params::PenareParams;
+use utils::{mix_between, mix_in};
 
 // This is a shortened version of the gain example with most comments removed, check out
 // https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
@@ -136,57 +139,91 @@ impl Plugin for Penare {
             let num_samples = channel_samples.len();
 
             let mix = self.params.mix.smoothed.next();
-            let clip_type = self.params.clip_type.value();
             let clip_output = self.params.clip_output.value();
             let clip_output_value = self.params.clip_output_value.value();
 
             let pre_gain = self.params.pre_gain.smoothed.next();
-            let threshold = self.params.threshold.smoothed.next();
+            let function_mix = self.params.function_mix.smoothed.next();
+            let function_type = self.params.function_type.value();
+            let function_param = self.params.function_param.smoothed.next();
             let post_gain = self.params.post_gain.smoothed.next();
+
+            let rectify = self.params.rectify.value();
+            let rectify_mix = self.params.rectify_mix.smoothed.next();
+            let rectify_mix_in = self.params.rectify_mix_in.smoothed.next();
+            let rectify_type = self.params.rectify_type.value();
 
             let excess_mix = self.params.excess_mix.smoothed.next();
             let excess_bypass = self.params.excess_bypass.value();
             self.filter_update();
 
+            //   Input
+            //     ├───────────────┐
+            //     │               │ (Dry Signal)
+            //   Filter ───────┐   │
+            //     │           │   │
+            //  Pre-Gain       │ (Excess Signal)
+            //     │           │   │
+            // Distortions     │   │
+            //     │           │   │
+            // Waveshape       │   │
+            //     │           │   │
+            // Post-Gain       │   │
+            //     │           │   │
+            // Excess Mix ─────┘   │
+            //     │               │
+            //    Mix ─────────────┘
+            //     │
+            // Final-Clip
+            //     │
+            //   Output
+
             for (channel_idx, sample) in channel_samples.into_iter().enumerate() {
+                let dry = *sample;
+                // --- Filter ---
                 // Apply low-pass filter
                 let (s, lp_ex) = self.low_pass(channel_idx, *sample);
                 // Apply high-pass filter
                 let (s, hp_ex) = self.high_pass(channel_idx, s);
                 *sample = s;
 
-                let dry = *sample;
+                // --- Pre-Gain ---
                 *sample *= pre_gain; // Pre-gain
-                *sample = clip_type.apply(*sample, threshold); // Clip
+
+                // --- Distortions ---
+                // Rectify
+                if rectify {
+                    let rs = rectify_type.apply(*sample); // Rectified signal
+                    *sample = mix_between(*sample, rs, rectify_mix);
+                    *sample = mix_in(*sample, rs, rectify_mix_in);
+                }
+
+                // --- Waveshaper ---
+                let wss = function_type.apply(*sample, function_param); // Wave shaped signal
+                *sample = mix_between(*sample, wss, function_mix);
+
+                // --- Post-Gain ---
                 *sample *= post_gain; // Post-gain
-                // Mix between dry and wet
-                *sample =
-                    mix * *sample // Wet signal
-                    + (1.0 - mix) * dry; // Dry signal
 
                 // Filter mix
                 if !excess_bypass {
-                    // Mix between filtered and unfiltered signal
-                    // 100% = Processed only
-                    // 0%   = Processed + Filter excesses
-                    *sample =
-                        *sample // Processed signal
-                        // Excess signal
-                        + excess_mix * lp_ex
-                        + excess_mix * hp_ex;
+                    // Mix in excess signal
+                    *sample = mix_in(
+                        *sample,
+                        excess_mix * lp_ex + excess_mix * hp_ex,
+                        excess_mix,
+                    );
                 } else {
                     // Excess signal only
                     *sample = lp_ex + hp_ex;
                 }
 
+                // Mix between dry and wet
+                *sample = mix_between(dry, *sample, mix);
+
                 // Final clip
                 if clip_output {
-                    let t = if clip_output_value {
-                        1.0
-                    } else {
-                        threshold
-                    };
-                    *sample = clip::ClipType::Hard.apply(*sample, t);
+                    *sample = waveshaper::FunctionType::Hard.apply(*sample, clip_output_value);
                 }
 
                 // Calculate amplitude (for peak meter)

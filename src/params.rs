@@ -1,4 +1,4 @@
-use crate::{clip, editor};
+use crate::{waveshaper, rectify, editor};
 use std::sync::Arc;
 use nih_plug::prelude::*;
 use nih_plug_vizia::ViziaState;
@@ -17,26 +17,42 @@ pub struct PenareParams {
     /// Mix between dry and wet signal
     #[id = "mix"]
     pub mix: FloatParam,
-    /// Clipping types
-    #[id = "clip-type"]
-    pub clip_type: EnumParam<clip::ClipType>,
     /// (Hard) clip the final output (after everything)
     /// Essentially turning some of the clipping types into distortion
     #[id = "clip-output"]
     pub clip_output: BoolParam,
-    /// Use 1.0 as threshold for final clipping
+    /// Final clip threshold
     #[id = "clip-output-value"]
-    pub clip_output_value: BoolParam, // true = 1.0, false = threshold
+    pub clip_output_value: FloatParam,
 
-    /// Pre gain before clip parameter in decibels
+    /// Pre gain before waveshaping in decibels
     #[id = "pre-gain"]
     pub pre_gain: FloatParam,
-    /// Clip Threshold in decibels
-    #[id = "clip"]
-    pub threshold: FloatParam,
-    /// Post gain after clip parameter in decibels
+    /// Mix between dry and wet signal (excluding gain)
+    #[id = "function-mix"]
+    pub function_mix: FloatParam,
+    /// Function type to use in waveshaper
+    #[id = "clip-type"]
+    pub function_type: EnumParam<waveshaper::FunctionType>,
+    /// Wave shaper parameter
+    #[id = "function-param"]
+    pub function_param: FloatParam,
+    /// Post gain after waveshaping
     #[id = "post-gain"]
     pub post_gain: FloatParam,
+
+    /// Rectify the signal
+    #[id = "rectify"]
+    pub rectify: BoolParam,
+    /// Rectify mix
+    #[id = "rectify-mix"]
+    pub rectify_mix: FloatParam,
+    /// Mix in rectified signal
+    #[id = "rectify-mix-in"]
+    pub rectify_mix_in: FloatParam,
+    /// Rectify type
+    #[id = "rectify-type"]
+    pub rectify_type: EnumParam<rectify::RectifyType>,
 
     /// Mix excess signal back into the input
     #[id = "excess-mix"]
@@ -127,17 +143,24 @@ impl Default for PenareParams {
             editor_state: editor::default_state(),
 
             mix: percentage!("Mix", 1.0),
-            clip_type: EnumParam::new("Clip Type", clip::ClipType::Hard),
-            pre_gain: db!("Pre Gain", 30.0),
-            threshold: db!("Threshold", 30.0),
-            post_gain: db!("Post Gain", 30.0),
             clip_output: BoolParam::new("Clip Output", true),
-            clip_output_value: BoolParam::new("Clip Output Value", true),
+            clip_output_value: db!("Clip Output Value", 1.0),
+
+            pre_gain: db!("Pre Gain", 30.0),
+            function_mix: percentage!("Function Mix", 1.0),
+            function_type: EnumParam::new("Function Type", waveshaper::FunctionType::Hard),
+            function_param: db!("Function Parameter", 30.0),
+            post_gain: db!("Post Gain", 30.0),
+
+            rectify: BoolParam::new("Rectify", false),
+            rectify_mix: percentage!("Rectify Mix", 0.0),
+            rectify_mix_in: percentage!("Rectify Mix In", 1.0),
+            rectify_type: EnumParam::new("Rectify Type", rectify::RectifyType::HalfWave),
 
             excess_mix: percentage!("Excess Mix", 0.0),
-            low_pass: hz!("Low Pass", 1000.0),
+            low_pass: hz!("Low Pass", MAX_FREQ),
             low_pass_q: q!("Low Pass Q", 2.0f32.sqrt() / 2.0),
-            high_pass: hz!("High Pass", 400.0),
+            high_pass: hz!("High Pass", MIN_FREQ),
             high_pass_q: q!("High Pass Q", 2.0f32.sqrt() / 2.0),
             excess_bypass: BoolParam::new("Excess Bypass", false),
         }

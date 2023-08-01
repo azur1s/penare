@@ -1,7 +1,7 @@
 use nih_plug::prelude::*;
 
 #[derive(Clone, Copy, Enum, PartialEq)]
-pub enum ClipType {
+pub enum FunctionType {
     // Classic hard clip
     Hard,
     // "Scaled" clipping (t * x)
@@ -17,44 +17,44 @@ pub enum ClipType {
     InvTwoTanh,
 }
 
-impl ClipType {
+impl FunctionType {
     pub fn apply(&self, x: f32, threshold: f32) -> f32 {
         let sig = x.signum();
         let xa = x.abs();
         match self {
-            ClipType::Hard       => x.min(threshold).max(-threshold),
-            ClipType::Scaled     => x * threshold,
-            ClipType::TwoTanh    => (2.0 * x).tanh() * threshold,
-            ClipType::Reciprocal => 2.0 * sig * (threshold - (threshold / (xa + 1.0))),
-            ClipType::Softdrive  => sig * match xa {
+            FunctionType::Hard       => x.min(threshold).max(-threshold),
+            FunctionType::Scaled     => x * threshold,
+            FunctionType::TwoTanh    => (2.0 * x).tanh() * threshold,
+            FunctionType::Reciprocal => 2.0 * sig * (threshold - (threshold / (xa + 1.0))),
+            FunctionType::Softdrive  => sig * match xa {
                 x if x <= 1.0 / 3.0 * threshold => 2.0 * x,
                 x if x <= 2.0 / 3.0 * threshold => (3.0 - (2.0 - 3.0 * x).powi(2)) / 3.0,
                 _ => threshold,
             },
-            ClipType::InvTwoTanh => sig * match xa {
-                x if x < threshold / 2.0 => (2.0 * (2.0 * xa / threshold).atanh()).tanh() * threshold,
+            FunctionType::InvTwoTanh => sig * match xa {
+                x if x < threshold / 2.0 => (2.0 * (2.0 * x / threshold).atanh()).tanh() * threshold,
                 _ => threshold,
             }
         }
     }
 }
 
-impl std::fmt::Display for ClipType {
+impl std::fmt::Display for FunctionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ClipType::Hard        => write!(f, "Hard"),
-            ClipType::Scaled      => write!(f, "Scaled"),
-            ClipType::TwoTanh     => write!(f, "2Tanh"),
-            ClipType::Reciprocal  => write!(f, "Reciprocal"),
-            ClipType::Softdrive   => write!(f, "Softdrive"),
-            ClipType::InvTwoTanh  => write!(f, "Inv2Tanh"),
+            FunctionType::Hard        => write!(f, "Hard"),
+            FunctionType::Scaled      => write!(f, "Scaled"),
+            FunctionType::TwoTanh     => write!(f, "2Tanh"),
+            FunctionType::Reciprocal  => write!(f, "Reciprocal"),
+            FunctionType::Softdrive   => write!(f, "Softdrive"),
+            FunctionType::InvTwoTanh  => write!(f, "Inv2Tanh"),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::ClipType::*;
+    use super::FunctionType::*;
 
     #[test]
     #[allow(unused_variables)]

@@ -81,13 +81,21 @@ pub(crate) fn create(
 
                 slider!(cx, "Mix", mix);
                 button!(cx, "Hard Clip Output", clip_output);
-                button!(cx, "Output Clip Threshold = 1", clip_output_value);
-                Label::new(cx, "Clip");
-                slider!(cx, "Type", clip_type);
-                Label::new(cx, "Gain");
+                slider!(cx, "Output Clip Threshold", clip_output_value);
+
+                Label::new(cx, "Waveshaper");
                 slider!(cx, "Pre Gain", pre_gain);
-                slider!(cx, "Threshold", threshold);
+                slider!(cx, "Function Mix", function_mix);
+                slider!(cx, "Function Type", function_type);
+                slider!(cx, "Function Parameter", function_param);
                 slider!(cx, "Post Gain", post_gain);
+
+                Label::new(cx, "Rectify");
+                button!(cx, "Rectify", rectify);
+                slider!(cx, "Rectify Mix", rectify_mix);
+                slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
+                slider!(cx, "Rectify Type", rectify_type);
+
                 Label::new(cx, "Filter");
                 slider!(cx, "Excess Mix", excess_mix);
                 slider!(cx, "Low Pass", low_pass);
