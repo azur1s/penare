@@ -1,8 +1,5 @@
 use crate::PenareParams;
-use std::{
-    sync::{ Arc, atomic::Ordering },
-    time::Duration,
-};
+use std::sync::Arc;
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
 use nih_plug_vizia::{
