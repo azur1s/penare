@@ -12,7 +12,7 @@ A wonky distortion plugin :3
   - Mix in wet signal (in case you want to layer it)
 
 ## Contributing
-Some of the [algorithms](src/clip.rs) probably is not correct so you can fix it if you think it's incorrect. Or you can add new one if you're feeling generous :D
+Some of the algorithms probably is not correct so you can fix it if you think it's incorrect. Or you can add new one if you're feeling generous :D
 
 ## Building
 
