@@ -1,6 +1,5 @@
 use crate::PenareParams;
 use std::sync::Arc;
-use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
 use nih_plug_vizia::{
     vizia::prelude::*,
@@ -13,7 +12,6 @@ use nih_plug_vizia::{
 #[derive(Lens)]
 struct Data {
     params: Arc<PenareParams>,
-    peak_meter: Arc<AtomicF32>,
 }
 
 impl Model for Data {}
@@ -24,7 +22,6 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
-    peak_meter: Arc<AtomicF32>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
@@ -33,7 +30,6 @@ pub(crate) fn create(
 
         Data {
             params: params.clone(),
-            peak_meter: peak_meter.clone(),
         }.build(cx);
 
         PopupData::default().build(cx);
@@ -42,17 +38,6 @@ pub(crate) fn create(
 
         VStack::new(cx, |cx| {
             // TODO: Implement waveform display
-            // PeakMeter::new(
-            //     cx,
-            //     Data::peak_meter
-            //         .map(|peak_meter| nih_plug::prelude::util::gain_to_db(peak_meter.load(Ordering::Relaxed))),
-            //     Some(Duration::from_millis(600)),
-            // )
-            // .child_top(Stretch(1.0))
-            // .child_bottom(Stretch(1.0))
-            // .width(Percentage(100.0))
-            // .height(Pixels(50.0))
-            // .background_color(Color::rgb(200, 200, 200));
 
             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                 macro_rules! hstack {

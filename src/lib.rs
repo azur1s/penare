@@ -18,14 +18,6 @@ use fxs::{
 struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
-    /// Needed to normalize the peak meter's response based on the sample rate.
-    peak_meter_decay_weight: f32,
-    /// The current data for the peak meter. This is stored as an [`Arc`] so we can share it between
-    /// the GUI and the audio processing parts. If you have more state to share, then it's a good
-    /// idea to put all of that in a struct behind a single `Arc`.
-    ///
-    /// This is stored as voltage gain.
-    peak_meter: Arc<AtomicF32>,
     /// Filters
     lp: [filter::Biquad; 2],
     lp_invert: [filter::Biquad; 2],
@@ -38,8 +30,6 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
-            peak_meter_decay_weight: 1.0,
-            peak_meter: Arc::new(AtomicF32::new(util::MINUS_INFINITY_DB)),
             lp: [filter::Biquad::default(); 2],
             lp_invert: [filter::Biquad::default(); 2],
             hp: [filter::Biquad::default(); 2],
@@ -95,7 +85,6 @@ impl Plugin for Penare {
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         editor::create(
             self.params.clone(),
-            self.peak_meter.clone(),
             self.params.editor_state.clone(),
         )
     }
@@ -107,12 +96,6 @@ impl Plugin for Penare {
         _context: &mut impl InitContext<Self>,
     ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
-        let peak_meter_decay_ms = 150.0;
-        // After `peak_meter_decay_ms` milliseconds of pure silence, the peak meter's value should
-        // have dropped by 12 dB
-        self.peak_meter_decay_weight = 0.25f64
-            .powf((buffer_config.sample_rate as f64 * peak_meter_decay_ms / 1000.0).recip())
-            as f32;
 
         self.update_lp();
         self.update_hp();
@@ -139,9 +122,6 @@ impl Plugin for Penare {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
-            let mut amplitude = 0.0;
-            let num_samples = channel_samples.len();
-
             let mix                   = self.params.mix.smoothed.next();
             let output_clip           = self.params.output_clip.value();
             let output_clip_threshold = self.params.output_clip_threshold.smoothed.next();
@@ -247,25 +227,10 @@ impl Plugin for Penare {
                 if output_clip {
                     *sample = waveshaper::FunctionType::HardClip.apply(*sample, output_clip_threshold);
                 }
-
-                // Calculate amplitude (for peak meter)
-                amplitude += *sample;
             }
 
             // Only calculate the UI-related data if the editor is open.
             if self.params.editor_state.is_open() {
-                // Peak meter
-                amplitude = (amplitude / num_samples as f32).abs();
-                let current_peak_meter = self.peak_meter.load(std::sync::atomic::Ordering::Relaxed);
-                let new_peak_meter = if amplitude > current_peak_meter {
-                    amplitude
-                } else {
-                    current_peak_meter * self.peak_meter_decay_weight
-                        + amplitude * (1.0 - self.peak_meter_decay_weight)
-                };
-
-                self.peak_meter
-                    .store(new_peak_meter, std::sync::atomic::Ordering::Relaxed);
             }
         }
 
