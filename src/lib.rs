@@ -138,23 +138,24 @@ impl Plugin for Penare {
             let mut amplitude = 0.0;
             let num_samples = channel_samples.len();
 
-            let mix = self.params.mix.smoothed.next();
-            let output_clip = self.params.output_clip.value();
+            let mix                   = self.params.mix.smoothed.next();
+            let output_clip           = self.params.output_clip.value();
             let output_clip_threshold = self.params.output_clip_threshold.smoothed.next();
 
-            let pre_gain = self.params.pre_gain.smoothed.next();
-            let function_mix = self.params.function_mix.smoothed.next();
-            let function_type = self.params.function_type.value();
+            let pre_gain       = self.params.pre_gain.smoothed.next();
+            let function_mix   = self.params.function_mix.smoothed.next();
+            let function_type  = self.params.function_type.value();
             let function_param = self.params.function_param.smoothed.next();
-            let post_gain = self.params.post_gain.smoothed.next();
+            let post_gain      = self.params.post_gain.smoothed.next();
 
-            let rectify = self.params.rectify.value();
-            let rectify_mix = self.params.rectify_mix.smoothed.next();
+            let rectify        = self.params.rectify.value();
+            let rectify_mix    = self.params.rectify_mix.smoothed.next();
             let rectify_mix_in = self.params.rectify_mix_in.smoothed.next();
-            let rectify_type = self.params.rectify_type.value();
+            let rectify_type   = self.params.rectify_type.value();
+            let rectify_flip   = self.params.rectify_flip.value();
 
-            let excess_mix = self.params.excess_mix.smoothed.next();
-            let excess_bypass = self.params.excess_bypass.value();
+            let excess_mix     = self.params.excess_mix.smoothed.next();
+            let excess_bypass  = self.params.excess_bypass.value();
             self.filter_update();
 
             //   Input
@@ -193,7 +194,10 @@ impl Plugin for Penare {
                 // --- Distortions ---
                 // Rectify
                 if rectify {
-                    let rs = rectify_type.apply(*sample); // Rectified signal
+                    let mut rs = rectify_type.apply(*sample); // Rectified signal
+                    if rectify_flip {
+                        rs = -rs;
+                    }
                     *sample = mix_between(*sample, rs, rectify_mix);
                     *sample = mix_in(*sample, rs, rectify_mix_in);
                 }

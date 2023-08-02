@@ -107,6 +107,7 @@ pub(crate) fn create(
                 slider!(cx, "Rectify Mix", rectify_mix);
                 slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
                 slider!(cx, "Rectify Type", rectify_type);
+                button!(cx, "Flip Rectified Signal", rectify_flip);
 
                 label!(cx, "Filter");
                 slider!(cx, "Excess Mix", excess_mix);

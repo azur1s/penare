@@ -53,6 +53,9 @@ pub struct PenareParams {
     /// Rectify type
     #[id = "rectify-type"]
     pub rectify_type: EnumParam<rectify::RectifyType>,
+    /// Filp rectified signal
+    #[id = "rectify-flip"]
+    pub rectify_flip: BoolParam,
 
     /// Mix excess signal back into the input
     #[id = "excess-mix"]
@@ -142,26 +145,27 @@ impl Default for PenareParams {
         Self {
             editor_state: editor::default_state(),
 
-            mix: percentage!("Mix", 1.0),
-            output_clip: BoolParam::new("Output Clip", false),
+            mix:                   percentage!("Mix", 1.0),
+            output_clip:           BoolParam::new("Output Clip", false),
             output_clip_threshold: db!("Output Clip Threshold", 30.0),
 
-            pre_gain: db!("Pre Gain", 30.0),
-            function_mix: percentage!("Function Mix", 1.0),
-            function_type: EnumParam::new("Function Type", waveshaper::FunctionType::HardClip),
+            pre_gain:       db!("Pre Gain", 30.0),
+            function_mix:   percentage!("Function Mix", 1.0),
+            function_type:  EnumParam::new("Function Type", waveshaper::FunctionType::HardClip),
             function_param: db!("Function Parameter", 30.0),
-            post_gain: db!("Post Gain", 30.0),
+            post_gain:      db!("Post Gain", 30.0),
 
-            rectify: BoolParam::new("Rectify", false),
-            rectify_mix: percentage!("Rectify Mix", 0.0),
+            rectify:        BoolParam::new("Rectify", false),
+            rectify_mix:    percentage!("Rectify Mix", 0.0),
             rectify_mix_in: percentage!("Rectify Mix In", 1.0),
-            rectify_type: EnumParam::new("Rectify Type", rectify::RectifyType::HalfWave),
+            rectify_type:   EnumParam::new("Rectify Type", rectify::RectifyType::HalfWave),
+            rectify_flip:   BoolParam::new("Rectify Flip", false),
 
-            excess_mix: percentage!("Excess Mix", 0.0),
-            low_pass: hz!("Low Pass", MAX_FREQ),
-            low_pass_q: q!("Low Pass Q", 2.0f32.sqrt() / 2.0),
-            high_pass: hz!("High Pass", MIN_FREQ),
-            high_pass_q: q!("High Pass Q", 2.0f32.sqrt() / 2.0),
+            excess_mix:    percentage!("Excess Mix", 0.0),
+            low_pass:      hz!("Low Pass", MAX_FREQ),
+            low_pass_q:    q!("Low Pass Q", 2.0f32.sqrt() / 2.0),
+            high_pass:     hz!("High Pass", MIN_FREQ),
+            high_pass_q:   q!("High Pass Q", 2.0f32.sqrt() / 2.0),
             excess_bypass: BoolParam::new("Excess Bypass", false),
         }
     }
