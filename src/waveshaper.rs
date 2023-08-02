@@ -11,7 +11,11 @@ pub enum FunctionType {
     // sign(x) * sqrt(|x|) * t
     Sqrt,
     // I don't know what is this
+    // 2 * sign(x) * (t - (t / 1 + |x|))
     Reciprocal,
+    // Reciprocal but tanh :))
+    // 2 * sign(x) * tanh(t - (t / 1 + |x|))
+    ReciprocalTanh,
     // Fig. 4.14 in DAFX
     // Probably best used as distortion
     Softdrive,
@@ -26,14 +30,15 @@ impl FunctionType {
         let xa = x.abs();
         let c = |x: f32| x.min(a).max(-a);
         match self {
-            HardClip   => c(x),
-            ScaledClip => c(x * a),
-            TwoTanh    => (2.0 * x).tanh() * a,
-            Sqrt       => sig * (xa.sqrt() * a),
-            Reciprocal => 2.0 * sig * (a - (a / (xa + 1.0))),
+            HardClip       => c(x),
+            ScaledClip     => c(x * a),
+            TwoTanh        => (2.0 * x).tanh() * a,
+            Sqrt           => sig * (xa.sqrt() * a),
+            Reciprocal     => 2.0 * sig * (a - (a / (xa + 1.0))),
+            ReciprocalTanh => 2.0 * sig * ((a - (a / (xa + 1.0))).tanh()),
             // Softdrive generate some white noise when clipping
             // I don't know if it's a correct behavior or not
-            Softdrive  => sig * match xa {
+            Softdrive => sig * match xa {
                 x if x <= 1.0 / 3.0 * a => 2.0 * x,
                 x if x <= 2.0 / 3.0 * a => (3.0 - (2.0 - 3.0 * x).powi(2)) / 3.0,
                 _ => a,
@@ -49,13 +54,14 @@ impl FunctionType {
 impl std::fmt::Display for FunctionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            FunctionType::HardClip     => write!(f, "HardClip"),
-            FunctionType::ScaledClip   => write!(f, "ScaledClip"),
-            FunctionType::TwoTanh      => write!(f, "2Tanh"),
-            FunctionType::Sqrt         => write!(f, "Sqrt"),
-            FunctionType::Reciprocal   => write!(f, "Reciprocal"),
-            FunctionType::Softdrive    => write!(f, "Softdrive"),
-            FunctionType::TanhTwoAtanh => write!(f, "Tanh2Atanh"),
+            FunctionType::HardClip       => write!(f, "HardClip"),
+            FunctionType::ScaledClip     => write!(f, "ScaledClip"),
+            FunctionType::TwoTanh        => write!(f, "2Tanh"),
+            FunctionType::Sqrt           => write!(f, "Sqrt"),
+            FunctionType::Reciprocal     => write!(f, "Reciprocal"),
+            FunctionType::ReciprocalTanh => write!(f, "ReciprocalTanh"),
+            FunctionType::Softdrive      => write!(f, "Softdrive"),
+            FunctionType::TanhTwoAtanh   => write!(f, "Tanh2Atanh"),
         }
     }
 }
