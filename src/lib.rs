@@ -122,30 +122,6 @@ impl Plugin for Penare {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
-            let mix                   = self.params.mix.smoothed.next();
-            let output_clip           = self.params.output_clip.value();
-            let output_clip_threshold = self.params.output_clip_threshold.smoothed.next();
-
-            let pre_gain       = self.params.pre_gain.smoothed.next();
-            let function_mix   = self.params.function_mix.smoothed.next();
-            let function_type  = self.params.function_type.value();
-            let function_param = self.params.function_param.smoothed.next();
-            let post_gain      = self.params.post_gain.smoothed.next();
-            let flip           = self.params.flip.value();
-
-            let rectify        = self.params.rectify.value();
-            let rectify_mix    = self.params.rectify_mix.smoothed.next();
-            let rectify_mix_in = self.params.rectify_mix_in.smoothed.next();
-            let rectify_type   = self.params.rectify_type.value();
-            let rectify_flip   = self.params.rectify_flip.value();
-
-            let floor        = self.params.floor.value();
-            let floor_mix    = self.params.floor_mix.smoothed.next();
-            let floor_mix_in = self.params.floor_mix_in.smoothed.next();
-            let floor_step   = self.params.floor_step.smoothed.next();
-
-            let excess_mix     = self.params.excess_mix.smoothed.next();
-            let excess_bypass  = self.params.excess_bypass.value();
             self.filter_update();
 
             //   Input
@@ -179,40 +155,65 @@ impl Plugin for Penare {
                 *sample = s;
 
                 // --- Pre-Gain ---
-                *sample *= pre_gain; // Pre-gain
+                *sample *= self.params.pre_gain.smoothed.next(); // Pre-gain
 
                 // --- Distortions ---
-                // Rectify
-                if rectify {
-                    let mut rs = rectify_type.apply(*sample); // Rectified signal
-                    if rectify_flip {
+                // - Rectify
+                if self.params.rectify.value() {
+                    let mut rs = self.params.rectify_type.value().apply(*sample); // Rectified signal
+                    if self.params.rectify_flip.value() {
                         rs = -rs;
                     }
-                    *sample = mix_between(*sample, rs, rectify_mix);
-                    *sample = mix_in(*sample, rs, rectify_mix_in);
+                    *sample = mix_between(*sample, rs, self.params.rectify_mix.smoothed.next());
+                    *sample = mix_in(*sample, rs, self.params.rectify_mix_in.smoothed.next());
                 }
 
-                // Waveshaper
-                let wss = function_type.apply(*sample, function_param); // Wave shaped signal
-                let wss = if flip { -wss } else { wss }; // Flip the phase of the signal
-                *sample = mix_between(*sample, wss, function_mix);
+                // - Waveshaper
+                let should_copy = self.params.copy_function.value();
+                // Wave shaped signal
+                let wss = if !should_copy.is_false() {
+                    // If "Copy Function" is on then the function type is used
+                    // for the both positive and negative shape
+                    let (ft, fp) = if should_copy.is_positive() {
+                        (self.params.pos_function_type.value(),
+                        self.params.pos_function_param.smoothed.next())
+                    } else {
+                        (self.params.neg_function_type.value(),
+                        self.params.neg_function_param.smoothed.next())
+                    };
+                    ft.apply(*sample, fp)
+                } else {
+                    // Otherwise, use the function type for the shape of the signal
+                    if *sample >= 0.0 {
+                        self.params.pos_function_type.value()
+                        .apply(*sample, self.params.pos_function_param.smoothed.next())
+                    } else {
+                        self.params.neg_function_type.value()
+                        .apply(*sample, self.params.neg_function_param.smoothed.next())
+                    }
+                };
+                // Flip the phase of the signal
+                let wss = if self.params.flip.value() { -wss } else { wss };
+                *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
 
-                // Floorer
-                if floor {
-                    let fs = signfloor(*sample, floor_step); // Floored signal
-                    *sample = mix_between(*sample, fs, floor_mix);
-                    *sample = mix_in(*sample, fs, floor_mix_in);
+                // - Floorer
+                if self.params.floor.value() {
+                    let fs = signfloor(*sample, self.params.floor_step.smoothed.next()); // Floored signal
+                    *sample = mix_between(*sample, fs, self.params.floor_mix.smoothed.next());
+                    *sample = mix_in(*sample, fs, self.params.floor_mix_in.smoothed.next());
                 }
 
                 // --- Post-Gain ---
-                *sample *= post_gain; // Post-gain
+                *sample *= self.params.post_gain.smoothed.next(); // Post-gain
 
                 // Filter mix
-                if !excess_bypass {
+                if !self.params.excess_bypass.value() {
                     // Mix in excess signal
+                    let excess_mix = self.params.excess_mix.smoothed.next();
                     *sample = mix_in(
                         *sample,
-                        excess_mix * lp_ex + excess_mix * hp_ex,
+                        excess_mix * lp_ex
+                        + excess_mix * hp_ex,
                         excess_mix,
                     );
                 } else {
@@ -221,11 +222,14 @@ impl Plugin for Penare {
                 }
 
                 // Mix between dry and wet
-                *sample = mix_between(dry, *sample, mix);
+                *sample = mix_between(dry, *sample, self.params.mix.smoothed.next());
 
                 // Final clip
-                if output_clip {
-                    *sample = waveshaper::FunctionType::HardClip.apply(*sample, output_clip_threshold);
+                if self.params.output_clip.value() {
+                    *sample = waveshaper::FunctionType::HardClip.apply(
+                        *sample,
+                        self.params.output_clip_threshold.smoothed.next(),
+                    );
                 }
             }
 

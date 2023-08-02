@@ -9,6 +9,24 @@ use nih_plug_vizia::ViziaState;
 const MAX_FREQ: f32 = 22000.0;
 const MIN_FREQ: f32 = 5.0;
 
+#[derive(Enum, PartialEq)]
+pub enum OAB { Off, Pos, Neg }
+
+impl OAB {
+    pub fn is_false(&self)    -> bool { matches!(self, OAB::Off) }
+    pub fn is_positive(&self) -> bool { matches!(self, OAB::Pos) }
+}
+
+impl std::fmt::Display for OAB {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OAB::Off => write!(f, "Off"),
+            OAB::Pos => write!(f, "Positive"),
+            OAB::Neg => write!(f, "Negative"),
+        }
+    }
+}
+
 #[derive(Params)]
 pub struct PenareParams {
     #[persist = "editor-state"]
@@ -42,15 +60,24 @@ pub struct PenareParams {
     /// Mix between dry and wet signal (excluding gain)
     #[id = "function-mix"]
     pub function_mix: FloatParam,
-    /// Function type to use in waveshaper
-    #[id = "clip-type"]
-    pub function_type: EnumParam<waveshaper::FunctionType>,
-    /// Wave shaper parameter
-    #[id = "function-param"]
-    pub function_param: FloatParam,
+    /// Function type to apply to positive shape
+    #[id = "pos-function-type"]
+    pub pos_function_type: EnumParam<waveshaper::FunctionType>,
+    /// Function parameter to use in positive shape function
+    #[id = "pos-function-param"]
+    pub pos_function_param: FloatParam,
+    /// Function type to apply to negative shape
+    #[id = "neg-function-type"]
+    pub neg_function_type: EnumParam<waveshaper::FunctionType>,
+    /// Function parameter to use in negative shape function
+    #[id = "neg-function-param"]
+    pub neg_function_param: FloatParam,
     /// Post gain after waveshaping
     #[id = "post-gain"]
     pub post_gain: FloatParam,
+    /// Use function for the positive/negative shape too
+    #[id = "copy-function"]
+    pub copy_function: EnumParam<OAB>,
     /// Flip the waveshaped signal
     #[id = "flip"]
     pub flip: BoolParam,
@@ -188,12 +215,15 @@ impl Default for PenareParams {
             output_clip:           BoolParam::new("Output Clip", true),
             output_clip_threshold: db!("Output Clip Threshold", 30.0),
 
-            pre_gain:       db!("Pre Gain", 30.0),
-            function_mix:   percentage!("Function Mix", 1.0),
-            function_type:  EnumParam::new("Function Type", waveshaper::FunctionType::HardClip),
-            function_param: db!("Function Parameter", 30.0),
-            post_gain:      db!("Post Gain", 30.0),
-            flip:           BoolParam::new("Flip", false),
+            pre_gain:           db!("Pre Gain", 30.0),
+            function_mix:       percentage!("Function Mix", 1.0),
+            pos_function_type:  EnumParam::new("Positive Function Type", waveshaper::FunctionType::HardClip),
+            pos_function_param: db!("Positive Function Parameter", 30.0),
+            neg_function_type:  EnumParam::new("Negative Function Type", waveshaper::FunctionType::HardClip),
+            neg_function_param: db!("Negative Function Parameter", 30.0),
+            post_gain:          db!("Post Gain", 30.0),
+            copy_function:      EnumParam::new("Copy Function", OAB::Off),
+            flip:               BoolParam::new("Flip", false),
 
             rectify:        BoolParam::new("Rectify", false),
             rectify_mix:    percentage!("Rectify Mix", 0.0),

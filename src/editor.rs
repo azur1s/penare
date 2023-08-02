@@ -83,9 +83,12 @@ pub(crate) fn create(
                 label!(cx, "Waveshaper");
                 slider!(cx, "Pre Gain", pre_gain);
                 slider!(cx, "Function Mix", function_mix);
-                slider!(cx, "Function Type", function_type);
-                slider!(cx, "Function Parameter", function_param);
+                slider!(cx, "+ Function Type", pos_function_type);
+                slider!(cx, "+ Function Parameter", pos_function_param);
+                slider!(cx, "- Function Type", neg_function_type);
+                slider!(cx, "- Function Parameter", neg_function_param);
                 slider!(cx, "Post Gain", post_gain);
+                slider!(cx, "Copy From", copy_function);
                 button!(cx, "Flip Phase", flip);
 
                 label!(cx, "Rectifier");
