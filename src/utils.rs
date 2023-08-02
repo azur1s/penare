@@ -1,3 +1,7 @@
+pub fn signfloor(x: f32, step: f32) -> f32 {
+    x.signum() * ((x * x.signum() * step.abs()).floor() / step).abs()
+}
+
 /// Mix between two values.
 /// 0.0 = a, 1.0 = b
 pub fn mix_between(a: f32, b: f32, mix: f32) -> f32 {

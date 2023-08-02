@@ -9,7 +9,7 @@ mod editor;
 mod utils;
 
 use params::PenareParams;
-use utils::{mix_between, mix_in};
+use utils::{signfloor, mix_between, mix_in};
 
 // This is a shortened version of the gain example with most comments removed, check out
 // https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
@@ -157,6 +157,11 @@ impl Plugin for Penare {
             let rectify_type   = self.params.rectify_type.value();
             let rectify_flip   = self.params.rectify_flip.value();
 
+            let floor        = self.params.floor.value();
+            let floor_mix    = self.params.floor_mix.smoothed.next();
+            let floor_mix_in = self.params.floor_mix_in.smoothed.next();
+            let floor_step   = self.params.floor_step.smoothed.next();
+
             let excess_mix     = self.params.excess_mix.smoothed.next();
             let excess_bypass  = self.params.excess_bypass.value();
             self.filter_update();
@@ -205,9 +210,16 @@ impl Plugin for Penare {
                     *sample = mix_in(*sample, rs, rectify_mix_in);
                 }
 
-                // --- Waveshaper ---
+                // Waveshaper
                 let wss = function_type.apply(*sample, function_param); // Wave shaped signal
                 *sample = mix_between(*sample, wss, function_mix);
+
+                // Floorer
+                if floor {
+                    let fs = signfloor(*sample, floor_step); // Floored signal
+                    *sample = mix_between(*sample, fs, floor_mix);
+                    *sample = mix_in(*sample, fs, floor_mix_in);
+                }
 
                 // --- Post-Gain ---
                 *sample *= post_gain; // Post-gain

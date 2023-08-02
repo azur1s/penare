@@ -102,12 +102,18 @@ pub(crate) fn create(
                 slider!(cx, "Function Parameter", function_param);
                 slider!(cx, "Post Gain", post_gain);
 
-                label!(cx, "Rectify");
+                label!(cx, "Rectifier");
                 button!(cx, "Rectify", rectify);
                 slider!(cx, "Rectify Mix", rectify_mix);
                 slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
                 slider!(cx, "Rectify Type", rectify_type);
                 button!(cx, "Flip Rectified Signal", rectify_flip);
+
+                label!(cx, "Floorer");
+                button!(cx, "Floor", floor);
+                slider!(cx, "Floor Mix", floor_mix);
+                slider!(cx, "Floor Mix In", floor_mix_in);
+                slider!(cx, "Floor Step", floor_step);
 
                 label!(cx, "Filter");
                 slider!(cx, "Excess Mix", excess_mix);

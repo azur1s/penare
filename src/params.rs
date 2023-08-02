@@ -14,6 +14,10 @@ pub struct PenareParams {
     // these IDs remain constant, you can rename and reorder these fields as you wish. The
     // parameters are exposed to the host in the same order they were defined.
 
+    // ──────────────────────────────
+    // Mix
+    // ──────────────────────────────
+
     /// Mix between dry and wet signal
     #[id = "mix"]
     pub mix: FloatParam,
@@ -24,6 +28,10 @@ pub struct PenareParams {
     /// Final clip threshold
     #[id = "output-clip-threshold"]
     pub output_clip_threshold: FloatParam,
+
+    // ──────────────────────────────
+    // Waveshaper
+    // ──────────────────────────────
 
     /// Pre gain before waveshaping in decibels
     #[id = "pre-gain"]
@@ -41,6 +49,10 @@ pub struct PenareParams {
     #[id = "post-gain"]
     pub post_gain: FloatParam,
 
+    // ──────────────────────────────
+    // Rectify
+    // ──────────────────────────────
+
     /// Rectify the signal
     #[id = "rectify"]
     pub rectify: BoolParam,
@@ -56,6 +68,27 @@ pub struct PenareParams {
     /// Filp rectified signal
     #[id = "rectify-flip"]
     pub rectify_flip: BoolParam,
+
+    // ──────────────────────────────
+    // Floorer
+    // ──────────────────────────────
+
+    /// Floor the signal
+    #[id = "floor"]
+    pub floor: BoolParam,
+    /// Floor mix
+    #[id = "floor-mix"]
+    pub floor_mix: FloatParam,
+    /// Floor mix in
+    #[id = "floor-mix-in"]
+    pub floor_mix_in: FloatParam,
+    /// Floor step size
+    #[id = "floor-step"]
+    pub floor_step: FloatParam,
+
+    // ──────────────────────────────
+    // Filter
+    // ──────────────────────────────
 
     /// Mix excess signal back into the input
     #[id = "excess-mix"]
@@ -146,7 +179,7 @@ impl Default for PenareParams {
             editor_state: editor::default_state(),
 
             mix:                   percentage!("Mix", 1.0),
-            output_clip:           BoolParam::new("Output Clip", false),
+            output_clip:           BoolParam::new("Output Clip", true),
             output_clip_threshold: db!("Output Clip Threshold", 30.0),
 
             pre_gain:       db!("Pre Gain", 30.0),
@@ -160,6 +193,17 @@ impl Default for PenareParams {
             rectify_mix_in: percentage!("Rectify Mix In", 1.0),
             rectify_type:   EnumParam::new("Rectify Type", rectify::RectifyType::HalfWave),
             rectify_flip:   BoolParam::new("Rectify Flip", false),
+
+            floor:        BoolParam::new("Floor", false),
+            floor_mix:    percentage!("Floor Mix", 1.0),
+            floor_mix_in: percentage!("Floor Mix In", 0.0),
+            floor_step:   FloatParam::new(
+                "Floor Step",
+                3.0,
+                FloatRange::Linear { min: 0.0, max: 20.0 },
+            )
+            .with_smoother(SmoothingStyle::Linear(50.0))
+            .with_value_to_string(formatters::v2s_f32_rounded(2)),
 
             excess_mix:    percentage!("Excess Mix", 0.0),
             low_pass:      hz!("Low Pass", MAX_FREQ),
