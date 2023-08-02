@@ -1,3 +1,6 @@
+// Based off of nih-plug's Diopser filter
+// https://github.com/robbert-vdh/nih-plug/blob/master/plugins/diopser/src/filter.rs
+
 #[derive(Clone, Copy, Debug)]
 pub struct Biquad {
     pub coeff: Coeff,

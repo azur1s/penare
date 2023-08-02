@@ -19,7 +19,8 @@ Write-Host "Creating zip file for Penare $version"
 
 $vst3 = $build
 $clap = Join-Path $pwd "target/bundled/Penare.clap"
-7z a -tzip -mx=9 "target/Penare.$version.zip" $vst3 $clap
+$license = Join-Path $pwd "LICENSE"
+7z a -tzip -mx=9 "target/Penare.$version.zip" $vst3 $clap $license
 
 Write-Host "Press any key to continue..."
 $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
