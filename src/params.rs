@@ -66,12 +66,18 @@ pub struct PenareParams {
     /// Function parameter to use in positive shape function
     #[id = "pos-function-param"]
     pub pos_function_param: FloatParam,
+    /// Mix
+    #[id = "pos-function-mix"]
+    pub pos_function_mix: FloatParam,
     /// Function type to apply to negative shape
     #[id = "neg-function-type"]
     pub neg_function_type: EnumParam<waveshaper::FunctionType>,
     /// Function parameter to use in negative shape function
     #[id = "neg-function-param"]
     pub neg_function_param: FloatParam,
+    /// Mix
+    #[id = "neg-function-mix"]
+    pub neg_function_mix: FloatParam,
     /// Post gain after waveshaping
     #[id = "post-gain"]
     pub post_gain: FloatParam,
@@ -225,8 +231,10 @@ impl Default for PenareParams {
             function_mix:       percentage!("Function Mix", 1.0),
             pos_function_type:  EnumParam::new("Positive Function Type", waveshaper::FunctionType::HardClip),
             pos_function_param: db!("Positive Function Parameter", 30.0),
+            pos_function_mix:   percentage!("Positive Function Mix", 1.0),
             neg_function_type:  EnumParam::new("Negative Function Type", waveshaper::FunctionType::HardClip),
             neg_function_param: db!("Negative Function Parameter", 30.0),
+            neg_function_mix:   percentage!("Negative Function Mix", 1.0),
             post_gain:          db!("Post Gain", 30.0),
             copy_function:      EnumParam::new("Copy Function", OAB::Off),
             clip_function:      BoolParam::new("Clip Function", false),

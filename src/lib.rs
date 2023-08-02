@@ -133,8 +133,6 @@ impl Plugin for Penare {
             //     │           │   │
             // Distortions     │   │
             //     │           │   │
-            // Waveshape       │   │
-            //     │           │   │
             // Post-Gain       │   │
             //     │           │   │
             // Excess Mix ─────┘   │
@@ -182,7 +180,15 @@ impl Plugin for Penare {
                         (self.params.neg_function_type.value(),
                         self.params.neg_function_param.smoothed.next())
                     };
-                    (ft.apply(*sample, fp), fp)
+                    let mut wss = ft.apply(*sample, fp);
+                    // Mix between the original signal and the waveshaped signal
+                    let fm = if *sample >= 0.0 {
+                        self.params.pos_function_mix.smoothed.next()
+                    } else {
+                        self.params.neg_function_mix.smoothed.next()
+                    };
+                    wss = mix_between(*sample, wss, fm);
+                    (wss, fp)
                 } else {
                     // Otherwise, use the function type for the shape of the signal
                     let fp = if *sample >= 0.0 {
@@ -191,9 +197,13 @@ impl Plugin for Penare {
                         self.params.neg_function_param.smoothed.next()
                     };
                     (if *sample >= 0.0 {
-                        self.params.pos_function_type.value().apply(*sample, fp)
+                        let mut pws = self.params.pos_function_type.value().apply(*sample, fp);
+                        pws = mix_between(*sample, pws, self.params.pos_function_mix.smoothed.next());
+                        pws
                     } else {
-                        self.params.neg_function_type.value().apply(*sample, fp)
+                        let mut nws = self.params.neg_function_type.value().apply(*sample, fp);
+                        nws = mix_between(*sample, nws, self.params.neg_function_mix.smoothed.next());
+                        nws
                     }, fp)
                 };
                 // Clip the waveshaped signal

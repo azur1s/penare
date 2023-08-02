@@ -85,8 +85,10 @@ pub(crate) fn create(
                 slider!(cx, "Function Mix", function_mix);
                 slider!(cx, "+ Function Type", pos_function_type);
                 slider!(cx, "+ Function Parameter", pos_function_param);
+                slider!(cx, "+ Function Mix", pos_function_mix);
                 slider!(cx, "- Function Type", neg_function_type);
                 slider!(cx, "- Function Parameter", neg_function_param);
+                slider!(cx, "- Function Mix", neg_function_mix);
                 slider!(cx, "Post Gain", post_gain);
                 slider!(cx, "Copy From", copy_function);
                 button!(cx, "Clip Function", clip_function);
