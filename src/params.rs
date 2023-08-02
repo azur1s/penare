@@ -48,6 +48,9 @@ pub struct PenareParams {
     /// Post gain after waveshaping
     #[id = "post-gain"]
     pub post_gain: FloatParam,
+    /// Flip the waveshaped signal
+    #[id = "flip"]
+    pub flip: BoolParam,
 
     // ──────────────────────────────
     // Rectify
@@ -187,6 +190,7 @@ impl Default for PenareParams {
             function_type:  EnumParam::new("Function Type", waveshaper::FunctionType::HardClip),
             function_param: db!("Function Parameter", 30.0),
             post_gain:      db!("Post Gain", 30.0),
+            flip:           BoolParam::new("Flip", false),
 
             rectify:        BoolParam::new("Rectify", false),
             rectify_mix:    percentage!("Rectify Mix", 0.0),

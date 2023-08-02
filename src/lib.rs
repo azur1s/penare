@@ -150,6 +150,7 @@ impl Plugin for Penare {
             let function_type  = self.params.function_type.value();
             let function_param = self.params.function_param.smoothed.next();
             let post_gain      = self.params.post_gain.smoothed.next();
+            let flip           = self.params.flip.value();
 
             let rectify        = self.params.rectify.value();
             let rectify_mix    = self.params.rectify_mix.smoothed.next();
@@ -212,6 +213,7 @@ impl Plugin for Penare {
 
                 // Waveshaper
                 let wss = function_type.apply(*sample, function_param); // Wave shaped signal
+                let wss = if flip { -wss } else { wss }; // Flip the phase of the signal
                 *sample = mix_between(*sample, wss, function_mix);
 
                 // Floorer

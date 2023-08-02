@@ -101,6 +101,7 @@ pub(crate) fn create(
                 slider!(cx, "Function Type", function_type);
                 slider!(cx, "Function Parameter", function_param);
                 slider!(cx, "Post Gain", post_gain);
+                button!(cx, "Flip Phase", flip);
 
                 label!(cx, "Rectifier");
                 button!(cx, "Rectify", rectify);
