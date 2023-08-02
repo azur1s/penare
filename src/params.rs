@@ -1,5 +1,5 @@
 use crate::{
-    fxs::{waveshaper, rectify},
+    fxs::{waveshaper, rectifier, crusher},
     editor,
 };
 use std::sync::Arc;
@@ -100,27 +100,30 @@ pub struct PenareParams {
     pub rectify_mix_in: FloatParam,
     /// Rectify type
     #[id = "rectify-type"]
-    pub rectify_type: EnumParam<rectify::RectifyType>,
+    pub rectify_type: EnumParam<rectifier::RectifyType>,
     /// Filp rectified signal
     #[id = "rectify-flip"]
     pub rectify_flip: BoolParam,
 
     // ──────────────────────────────
-    // Floorer
+    // Crusher
     // ──────────────────────────────
 
-    /// Floor the signal
-    #[id = "floor"]
-    pub floor: BoolParam,
-    /// Floor mix
-    #[id = "floor-mix"]
-    pub floor_mix: FloatParam,
-    /// Floor mix in
-    #[id = "floor-mix-in"]
-    pub floor_mix_in: FloatParam,
-    /// Floor step size
-    #[id = "floor-step"]
-    pub floor_step: FloatParam,
+    /// Crush the signal
+    #[id = "crush"]
+    pub crush: BoolParam,
+    /// Crusher mix
+    #[id = "crush-mix"]
+    pub crush_mix: FloatParam,
+    /// Crusher mix in
+    #[id = "crush-mix-in"]
+    pub crush_mix_in: FloatParam,
+    /// Crush type
+    #[id = "crush-type"]
+    pub crush_type: EnumParam<crusher::CrushType>,
+    /// Crush step size
+    #[id = "crush-step"]
+    pub crush_step: FloatParam,
 
     // ──────────────────────────────
     // Filter
@@ -232,14 +235,15 @@ impl Default for PenareParams {
             rectify:        BoolParam::new("Rectify", false),
             rectify_mix:    percentage!("Rectify Mix", 0.0),
             rectify_mix_in: percentage!("Rectify Mix In", 1.0),
-            rectify_type:   EnumParam::new("Rectify Type", rectify::RectifyType::HalfWave),
+            rectify_type:   EnumParam::new("Rectify Type", rectifier::RectifyType::HalfWave),
             rectify_flip:   BoolParam::new("Rectify Flip", false),
 
-            floor:        BoolParam::new("Floor", false),
-            floor_mix:    percentage!("Floor Mix", 1.0),
-            floor_mix_in: percentage!("Floor Mix In", 0.0),
-            floor_step:   FloatParam::new(
-                "Floor Step",
+            crush:        BoolParam::new("Crush", false),
+            crush_mix:    percentage!("Crusher Mix", 1.0),
+            crush_mix_in: percentage!("Crusher Mix In", 0.0),
+            crush_type:   EnumParam::new("Crusher Type", crusher::CrushType::Floor),
+            crush_step:   FloatParam::new(
+                "Crusher Step",
                 3.0,
                 FloatRange::Linear { min: 0.0, max: 20.0 },
             )

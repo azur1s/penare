@@ -99,11 +99,12 @@ pub(crate) fn create(
                 slider!(cx, "Rectify Type", rectify_type);
                 button!(cx, "Flip Rectified Signal", rectify_flip);
 
-                label!(cx, "Floorer");
-                button!(cx, "Floor", floor);
-                slider!(cx, "Floor Mix", floor_mix);
-                slider!(cx, "Floor Mix In", floor_mix_in);
-                slider!(cx, "Floor Step", floor_step);
+                label!(cx, "Crusher");
+                button!(cx, "Crush", crush);
+                slider!(cx, "Crush Mix", crush_mix);
+                slider!(cx, "Crush Mix In", crush_mix_in);
+                slider!(cx, "Crush Type", crush_type);
+                slider!(cx, "Crush Step", crush_step);
 
                 label!(cx, "Filter");
                 slider!(cx, "Excess Mix", excess_mix);

@@ -10,7 +10,7 @@ A wonky distortion plugin :3
   - Half and Full rectify
   - Mix between dry and wet signal
   - Mix in wet signal (in case you want to layer it)
-- Floorer
+- Crusher
   - Adjustable step (you can use this for quality reduction kind-of deal)
   - Mix between or in dry and wet signal
 

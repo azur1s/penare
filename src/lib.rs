@@ -9,10 +9,8 @@ use params::PenareParams;
 use fxs::{
     filter,
     waveshaper,
-    utils::{signfloor, mix_between, mix_in},
+    utils::{mix_between, mix_in, hard_clip},
 };
-
-use self::fxs::utils::hard_clip;
 
 // This is a shortened version of the gain example with most comments removed, check out
 // https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
@@ -206,11 +204,13 @@ impl Plugin for Penare {
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
 
-                // - Floorer
-                if self.params.floor.value() {
-                    let fs = signfloor(*sample, self.params.floor_step.smoothed.next()); // Floored signal
-                    *sample = mix_between(*sample, fs, self.params.floor_mix.smoothed.next());
-                    *sample = mix_in(*sample, fs, self.params.floor_mix_in.smoothed.next());
+                // - Crusher
+                if self.params.crush.value() {
+                    // Crushed signal
+                    let step = self.params.crush_step.smoothed.next();
+                    let cs = self.params.crush_type.value().apply(*sample, step);
+                    *sample = mix_between(*sample, cs, self.params.crush_mix.smoothed.next());
+                    *sample = mix_in(*sample, cs, self.params.crush_mix_in.smoothed.next());
                 }
 
                 // --- Post-Gain ---
