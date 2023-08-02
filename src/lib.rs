@@ -48,6 +48,9 @@ impl Default for Penare {
 }
 
 impl Plugin for Penare {
+    #[cfg(debug_assertions)]
+    const NAME: &'static str = "Penare Debug";
+    #[cfg(not(debug_assertions))]
     const NAME: &'static str = "Penare";
     const VENDOR: &'static str = "Azur1s";
     const URL: &'static str = env!("CARGO_PKG_HOMEPAGE");
@@ -321,6 +324,9 @@ impl ClapPlugin for Penare {
 }
 
 impl Vst3Plugin for Penare {
+    #[cfg(debug_assertions)]
+    const VST3_CLASS_ID: [u8; 16] = *b"PenareDBG!Azur1s";
+    #[cfg(not(debug_assertions))]
     const VST3_CLASS_ID: [u8; 16] = *b"Penare....Azur1s";
 
     // And also don't forget to change these categories

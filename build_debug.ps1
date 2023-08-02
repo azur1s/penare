@@ -7,7 +7,7 @@ $vst3_name = "PenareDebug.vst3"
 $build = Join-Path $pwd "target/bundled/Penare.vst3/Contents/x86_64-win/Penare.vst3"
 $build_to = Join-Path $pwd "target/bundled/Penare.vst3/Contents/x86_64-win/$vst3_name"
 Write-Host "Renaming $build to $build_to"
-Rename-Item $build $build_to
+Move-Item $build $build_to -Force
 $build = $build_to
 
 # Move the VST3 file to the target directory
