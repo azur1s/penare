@@ -1,4 +1,7 @@
-use crate::{waveshaper, rectify, editor};
+use crate::{
+    fxs::{waveshaper, rectify},
+    editor,
+};
 use std::sync::Arc;
 use nih_plug::prelude::*;
 use nih_plug_vizia::ViziaState;

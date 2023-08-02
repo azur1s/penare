@@ -2,14 +2,15 @@ use std::sync::Arc;
 use nih_plug::prelude::*;
 
 mod params;
-mod waveshaper;
-mod rectify;
-mod filter;
 mod editor;
-mod utils;
+mod fxs;
 
 use params::PenareParams;
-use utils::{signfloor, mix_between, mix_in};
+use fxs::{
+    filter,
+    waveshaper,
+    utils::{signfloor, mix_between, mix_in},
+};
 
 // This is a shortened version of the gain example with most comments removed, check out
 // https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
