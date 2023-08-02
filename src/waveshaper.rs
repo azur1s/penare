@@ -8,6 +8,8 @@ pub enum FunctionType {
     ScaledClip,
     // tanh(2x) * t
     TwoTanh,
+    // sign(x) * sqrt(|x|) * t
+    Sqrt,
     // I don't know what is this
     Reciprocal,
     // Fig. 4.14 in DAFX
@@ -27,6 +29,7 @@ impl FunctionType {
             HardClip   => c(x),
             ScaledClip => c(x * a),
             TwoTanh    => (2.0 * x).tanh() * a,
+            Sqrt       => sig * (xa.sqrt() * a),
             Reciprocal => 2.0 * sig * (a - (a / (xa + 1.0))),
             // Softdrive generate some white noise when clipping
             // I don't know if it's a correct behavior or not
@@ -49,6 +52,7 @@ impl std::fmt::Display for FunctionType {
             FunctionType::HardClip     => write!(f, "HardClip"),
             FunctionType::ScaledClip   => write!(f, "ScaledClip"),
             FunctionType::TwoTanh      => write!(f, "2Tanh"),
+            FunctionType::Sqrt         => write!(f, "Sqrt"),
             FunctionType::Reciprocal   => write!(f, "Reciprocal"),
             FunctionType::Softdrive    => write!(f, "Softdrive"),
             FunctionType::TanhTwoAtanh => write!(f, "Tanh2Atanh"),
