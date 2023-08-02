@@ -1,9 +1,17 @@
 # Build
 cargo xtask bundle penare
 
+$vst3_name = "PenareDebug.vst3"
+
+# Rename file
+$build = Join-Path $pwd "target/bundled/Penare.vst3/Contents/x86_64-win/Penare.vst3"
+$build_to = Join-Path $pwd "target/bundled/Penare.vst3/Contents/x86_64-win/$vst3_name"
+Write-Host "Renaming $build to $build_to"
+Rename-Item $build $build_to
+$build = $build_to
+
 # Move the VST3 file to the target directory
 $pwd = Get-Location
-$build = Join-Path $pwd "target/bundled/Penare.vst3/Contents/x86_64-win/Penare.vst3"
 $to = $env:VST3_DIR
 Write-Host "Moving $build to $to"
 if ($to -eq $null) {
