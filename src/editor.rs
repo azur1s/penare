@@ -89,6 +89,7 @@ pub(crate) fn create(
                 slider!(cx, "- Function Parameter", neg_function_param);
                 slider!(cx, "Post Gain", post_gain);
                 slider!(cx, "Copy From", copy_function);
+                button!(cx, "Clip Function", clip_function);
                 button!(cx, "Flip Phase", flip);
 
                 label!(cx, "Rectifier");

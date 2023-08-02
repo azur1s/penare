@@ -78,6 +78,9 @@ pub struct PenareParams {
     /// Use function for the positive/negative shape too
     #[id = "copy-function"]
     pub copy_function: EnumParam<OAB>,
+    /// Wrap the function in hard clip function
+    #[id = "clip-function"]
+    pub clip_function: BoolParam,
     /// Flip the waveshaped signal
     #[id = "flip"]
     pub flip: BoolParam,
@@ -223,6 +226,7 @@ impl Default for PenareParams {
             neg_function_param: db!("Negative Function Parameter", 30.0),
             post_gain:          db!("Post Gain", 30.0),
             copy_function:      EnumParam::new("Copy Function", OAB::Off),
+            clip_function:      BoolParam::new("Clip Function", false),
             flip:               BoolParam::new("Flip", false),
 
             rectify:        BoolParam::new("Rectify", false),

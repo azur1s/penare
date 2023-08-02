@@ -1,3 +1,7 @@
+pub fn hard_clip(x: f32, threshold: f32) -> f32 {
+    x.min(threshold).max(-threshold)
+}
+
 pub fn signfloor(x: f32, step: f32) -> f32 {
     x.signum() * ((x * x.signum() * step.abs()).floor() / step).abs()
 }

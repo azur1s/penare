@@ -12,6 +12,8 @@ use fxs::{
     utils::{signfloor, mix_between, mix_in},
 };
 
+use self::fxs::utils::hard_clip;
+
 // This is a shortened version of the gain example with most comments removed, check out
 // https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
 // started
@@ -170,8 +172,9 @@ impl Plugin for Penare {
 
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
+                let clip = self.params.clip_function.value();
                 // Wave shaped signal
-                let wss = if !should_copy.is_false() {
+                let (mut wss, fp) = if !should_copy.is_false() {
                     // If "Copy Function" is on then the function type is used
                     // for the both positive and negative shape
                     let (ft, fp) = if should_copy.is_positive() {
@@ -181,17 +184,24 @@ impl Plugin for Penare {
                         (self.params.neg_function_type.value(),
                         self.params.neg_function_param.smoothed.next())
                     };
-                    ft.apply(*sample, fp)
+                    (ft.apply(*sample, fp), fp)
                 } else {
                     // Otherwise, use the function type for the shape of the signal
-                    if *sample >= 0.0 {
-                        self.params.pos_function_type.value()
-                        .apply(*sample, self.params.pos_function_param.smoothed.next())
+                    let fp = if *sample >= 0.0 {
+                        self.params.pos_function_param.smoothed.next()
                     } else {
-                        self.params.neg_function_type.value()
-                        .apply(*sample, self.params.neg_function_param.smoothed.next())
-                    }
+                        self.params.neg_function_param.smoothed.next()
+                    };
+                    (if *sample >= 0.0 {
+                        self.params.pos_function_type.value().apply(*sample, fp)
+                    } else {
+                        self.params.neg_function_type.value().apply(*sample, fp)
+                    }, fp)
                 };
+                // Clip the waveshaped signal
+                if clip {
+                    wss = hard_clip(*sample, fp);
+                }
                 // Flip the phase of the signal
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());

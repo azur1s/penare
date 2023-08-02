@@ -1,4 +1,5 @@
-use nih_plug::prelude::*;
+use std::f32::consts::PI;
+use nih_plug::{prelude::*, util::gain_to_db};
 
 #[derive(Clone, Copy, Enum, PartialEq)]
 pub enum FunctionType {
@@ -21,6 +22,10 @@ pub enum FunctionType {
     Softdrive,
     // tanh(2atanh(2x)) * t
     TanhTwoAtanh,
+    // (1 - t) * x + t * sin(2pi * x * (1 + 3t))
+    Sinusoidal,
+    // sign(x) * {|x| > t : -|x| + 2t, |x|}
+    Singlefold,
 }
 
 impl FunctionType {
@@ -47,6 +52,15 @@ impl FunctionType {
                 x if x < a / 2.0 => (2.0 * (2.0 * x / a).atanh()).tanh() * a,
                 _ => a,
             },
+            Sinusoidal => {
+                // Normalize
+                let ab = (gain_to_db(a) / 30.0).abs();
+                (1.0 - ab) * x + ab * (2.0 * PI * x * (1.0 + 3.0 * ab)).sin()
+            },
+            Singlefold => sig * match xa {
+                x if x > a => -xa + 2.0 * (a.abs()),
+                _          => xa,
+            },
         }
     }
 }
@@ -62,6 +76,8 @@ impl std::fmt::Display for FunctionType {
             FunctionType::ReciprocalTanh => write!(f, "ReciprocalTanh"),
             FunctionType::Softdrive      => write!(f, "Softdrive"),
             FunctionType::TanhTwoAtanh   => write!(f, "Tanh2Atanh"),
+            FunctionType::Sinusoidal     => write!(f, "Sinusoidal"),
+            FunctionType::Singlefold     => write!(f, "Singlefold"),
         }
     }
 }
