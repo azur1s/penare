@@ -111,10 +111,12 @@ pub(crate) fn create(
 
                     label!(cx, "Filter");
                     slider!(cx, "Excess Mix", excess_mix);
-                    slider!(cx, "Low Pass", low_pass);
-                    slider!(cx, "Low Pass Q", low_pass_q);
-                    slider!(cx, "High Pass", high_pass);
-                    slider!(cx, "High Pass Q", high_pass_q);
+                    slider!(cx, "Filter 1 Type", f1_type);
+                    slider!(cx, "Filter 1 Freq", f1_freq);
+                    slider!(cx, "Filter 1 Q", f1_q);
+                    slider!(cx, "Filter 2 Type", f2_type);
+                    slider!(cx, "Filter 2 Freq", f2_freq);
+                    slider!(cx, "Filter 2 Q", f2_q);
                     button!(cx, "Excess Signal Bypass", excess_bypass);
                 })
                 .row_between(Pixels(10.0));

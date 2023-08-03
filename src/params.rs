@@ -1,5 +1,5 @@
 use crate::{
-    fxs::{waveshaper, rectifier, crusher},
+    fxs::{waveshaper, rectifier, crusher, filter},
     editor,
 };
 use std::sync::Arc;
@@ -7,7 +7,7 @@ use nih_plug::prelude::*;
 use nih_plug_vizia::ViziaState;
 
 const MAX_FREQ: f32 = 22000.0;
-const MIN_FREQ: f32 = 5.0;
+const MIN_FREQ: f32 = 0.0;
 
 #[derive(Enum, PartialEq)]
 pub enum OAB { Off, Pos, Neg }
@@ -138,18 +138,26 @@ pub struct PenareParams {
     /// Mix excess signal back into the input
     #[id = "excess-mix"]
     pub excess_mix: FloatParam,
-    /// Low pass on the clipper (where the clipper should start clipping)
-    #[id = "low-pass"]
-    pub low_pass: FloatParam,
-    #[id = "low-pass-q"]
-    pub low_pass_q: FloatParam,
-    /// High pass on the clipper (where the clipper should stop clipping)
-    #[id = "high-pass"]
-    pub high_pass: FloatParam,
-    #[id = "high-pass-q"]
-    pub high_pass_q: FloatParam,
+    /// Filter 1 type
+    #[id = "f1-type"]
+    pub f1_type: EnumParam<filter::FilterType>,
+    /// Filter 1 frequency
+    #[id = "f1-freq"]
+    pub f1_freq: FloatParam,
+    /// Filter 1 Q
+    #[id = "f1-q"]
+    pub f1_q: FloatParam,
+    /// Filter 2 type
+    #[id = "f2-type"]
+    pub f2_type: EnumParam<filter::FilterType>,
+    /// Filter 2 frequency
+    #[id = "f2-freq"]
+    pub f2_freq: FloatParam,
+    /// Filter 2 Q
+    #[id = "f2-q"]
+    pub f2_q: FloatParam,
     /// Excess signal bypass
-    #[id = "unfiltered"]
+    #[id = "excess-bypass"]
     pub excess_bypass: BoolParam,
 }
 
@@ -259,10 +267,12 @@ impl Default for PenareParams {
             .with_value_to_string(formatters::v2s_f32_rounded(2)),
 
             excess_mix:    percentage!("Excess Mix", 0.0),
-            low_pass:      hz!("Low Pass", MAX_FREQ),
-            low_pass_q:    q!("Low Pass Q", 2.0f32.sqrt() / 2.0),
-            high_pass:     hz!("High Pass", MIN_FREQ),
-            high_pass_q:   q!("High Pass Q", 2.0f32.sqrt() / 2.0),
+            f1_type:       EnumParam::new("Filter 1 Type", filter::FilterType::Lowpass),
+            f1_freq:       hz!("Filter 1 Freq", MAX_FREQ),
+            f1_q:          q!("Filter 1 Q", 2.0f32.sqrt() / 2.0),
+            f2_type:       EnumParam::new("Filter 2 Type", filter::FilterType::Highpass),
+            f2_freq:       hz!("Filter 2 Freq", MIN_FREQ),
+            f2_q:          q!("Filter 2 Q", 2.0f32.sqrt() / 2.0),
             excess_bypass: BoolParam::new("Excess Bypass", false),
         }
     }

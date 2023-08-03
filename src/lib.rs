@@ -19,10 +19,8 @@ struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
     /// Filters
-    lp: [filter::Biquad; 2],
-    lp_invert: [filter::Biquad; 2],
-    hp: [filter::Biquad; 2],
-    hp_invert: [filter::Biquad; 2],
+    f1: [filter::Biquad; 2],
+    f2: [filter::Biquad; 2],
 }
 
 impl Default for Penare {
@@ -30,10 +28,8 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
-            lp: [filter::Biquad::default(); 2],
-            lp_invert: [filter::Biquad::default(); 2],
-            hp: [filter::Biquad::default(); 2],
-            hp_invert: [filter::Biquad::default(); 2],
+            f1: [filter::Biquad::default(); 2],
+            f2: [filter::Biquad::default(); 2],
         }
     }
 }
@@ -97,8 +93,14 @@ impl Plugin for Penare {
     ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
 
-        self.update_lp();
-        self.update_hp();
+        for filter in &mut self.f1 {
+            filter.sample_rate = self.sample_rate;
+        }
+        for filter in &mut self.f2 {
+            filter.sample_rate = self.sample_rate;
+        }
+        self.update_f1();
+        self.update_f2();
 
         // Resize buffers and perform other potentially expensive initialization operations here.
         // The `reset()` function is always called right after this function. You can remove this
@@ -107,10 +109,10 @@ impl Plugin for Penare {
     }
 
     fn reset(&mut self) {
-        for filter in &mut self.hp {
+        for filter in &mut self.f1 {
             filter.reset();
         }
-        for filter in &mut self.lp {
+        for filter in &mut self.f2 {
             filter.reset();
         }
     }
@@ -122,7 +124,7 @@ impl Plugin for Penare {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
-            self.filter_update();
+            self.update_fs();
 
             //   Input
             //     ├───────────────┐
@@ -147,9 +149,9 @@ impl Plugin for Penare {
                 let dry = *sample;
                 // --- Filter ---
                 // Apply low-pass filter
-                let (s, lp_ex) = self.low_pass(channel_idx, *sample);
+                let (s, f1_ex) = self.f1_process(channel_idx, *sample);
                 // Apply high-pass filter
-                let (s, hp_ex) = self.high_pass(channel_idx, s);
+                let (s, f2_ex) = self.f2_process(channel_idx, s);
                 *sample = s;
 
                 // --- Pre-Gain ---
@@ -232,13 +234,13 @@ impl Plugin for Penare {
                     let excess_mix = self.params.excess_mix.smoothed.next();
                     *sample = mix_in(
                         *sample,
-                        excess_mix * lp_ex
-                        + excess_mix * hp_ex,
+                        excess_mix * f1_ex
+                        + excess_mix * f2_ex,
                         excess_mix,
                     );
                 } else {
                     // Excess signal only
-                    *sample = lp_ex + hp_ex;
+                    *sample = f1_ex + f2_ex;
                 }
 
                 // Mix between dry and wet
@@ -263,56 +265,48 @@ impl Plugin for Penare {
 }
 
 impl Penare {
-    fn filter_update(&mut self) {
-        if self.params.low_pass.smoothed.is_smoothing()
-        || self.params.low_pass_q.smoothed.is_smoothing() {
-            self.update_lp();
+    fn update_fs(&mut self) {
+        if self.params.f1_freq.smoothed.is_smoothing()
+        || self.params.f1_q.smoothed.is_smoothing()
+        || self.f1[0].filter_type != self.params.f1_type.value() {
+            self.update_f1();
         }
-        if self.params.high_pass.smoothed.is_smoothing()
-        || self.params.high_pass_q.smoothed.is_smoothing() {
-            self.update_hp();
-        }
-    }
-
-    /// Returns (low-passed, excess)
-    fn low_pass(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
-        (
-            self.lp[channel_index].process(sample),
-            self.lp_invert[channel_index].process(sample),
-        )
-    }
-
-    /// Returns (high-passed, excess)
-    fn high_pass(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
-        (
-            self.hp[channel_index].process(sample),
-            self.hp_invert[channel_index].process(sample),
-        )
-    }
-
-    fn update_lp(&mut self) {
-        let freq = self.params.low_pass.smoothed.next();
-        let q = self.params.low_pass_q.smoothed.next();
-        let coeff = filter::Coeff::lowpass(self.sample_rate, freq, q);
-        let coeff_invert = filter::Coeff::highpass(self.sample_rate, freq, q);
-        for filter in &mut self.lp {
-            filter.coeff = coeff;
-        }
-        for filter in &mut self.lp_invert {
-            filter.coeff = coeff_invert;
+        if self.params.f2_freq.smoothed.is_smoothing()
+        || self.params.f2_q.smoothed.is_smoothing()
+        || self.f2[0].filter_type != self.params.f2_type.value() {
+            self.update_f2();
         }
     }
 
-    fn update_hp(&mut self) {
-        let freq = self.params.high_pass.smoothed.next();
-        let q = self.params.high_pass_q.smoothed.next();
-        let coeff = filter::Coeff::highpass(self.sample_rate, freq, q);
-        let coeff_invert = filter::Coeff::lowpass(self.sample_rate, freq, q);
-        for filter in &mut self.hp {
-            filter.coeff = coeff;
+    fn f1_process(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
+        self.f1[channel_index].process(sample)
+    }
+
+    fn f2_process(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
+        self.f2[channel_index].process(sample)
+    }
+
+    fn update_f1(&mut self) {
+        let ty = self.params.f1_type.value();
+        let freq = self.params.f1_freq.smoothed.next();
+        let q = self.params.f1_q.smoothed.next();
+        for filter in &mut self.f1 {
+            filter.filter_type = ty;
+            filter.freq = freq;
+            filter.q = q;
+            filter.calculate_coeff();
         }
-        for filter in &mut self.hp_invert {
-            filter.coeff = coeff_invert;
+    }
+
+    fn update_f2(&mut self) {
+        let ty = self.params.f2_type.value();
+        let freq = self.params.f2_freq.smoothed.next();
+        let q = self.params.f2_q.smoothed.next();
+        for filter in &mut self.f2 {
+            filter.filter_type = ty;
+            filter.freq = freq;
+            filter.q = q;
+            filter.calculate_coeff();
         }
     }
 }
