@@ -81,6 +81,13 @@ jobs:
             cargo xtask bundle penare "${args[@]}" --release
           fi
 
+      - name: Run xattr for macOS build
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          # Run xattr to remove quarantine attribute
+          xattr -cr target/bundled/Penare.vst3
+          xattr -cr target/bundled/Penare.clap
+
       - name: Determine build archive name
         run: |
           # Run cargo pkgid
