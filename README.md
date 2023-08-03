@@ -2,6 +2,14 @@
 
 A wonky distortion plugin :3 
 
+## Installing
+For Windows:
+1. Get the lastest release from the [here](https://github.com/azur1s/penare/releases)
+2. Unzip and find the `.vst3` or `.clap` file inside and move it to your VST3/CLAP directory
+
+For MacOS:
+1. TODO
+
 ## Features
 - Pre and Post gain control (no way)
 - Filter control (like which range the distortion is applied)
