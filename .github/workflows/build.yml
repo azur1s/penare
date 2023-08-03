@@ -78,6 +78,7 @@ jobs:
             fi
 
             cargo xtask bundle penare "${args[@]}" --release
+          fi
 
       - name: Determine build archive name
         run: |
