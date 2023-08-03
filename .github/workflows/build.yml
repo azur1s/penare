@@ -87,11 +87,11 @@ jobs:
           pkgid=(${pkgid//\#/ })
           ver=${pkgid[1]}
 
-          echo "ARCHIVE_NAME=Penare-ver-${{ matrix.name }}" >> "$GITHUB_ENV"
+          echo "ARCHIVE_NAME=Penare-$ver-${{ matrix.name }}" >> "$GITHUB_ENV"
 
       - name: Move build into a directory
         run: |
-          mkdir -p "$ARCHIVE_NAME/$ARCHIVE_NAME"
+          mkdir -p "$ARCHIVE_NAME"
           mv target/bundled/* "$ARCHIVE_NAME/$ARCHIVE_NAME"
 
       - uses: actions/upload-artifact@v3
