@@ -55,7 +55,10 @@ impl FunctionType {
             Sinusoidal => {
                 // Normalize
                 let ab = (gain_to_db(a) / 30.0).abs();
-                (1.0 - ab) * x + ab * (2.0 * PI * x * (1.0 + 3.0 * ab)).sin()
+                let w1 = (2.0 * PI * x * (1.0 + 3.0 * ab)).sin();
+                let w2 = (1.0 - ab) * x + ab * w1;
+                let w3 = (1.0 - 0.3 * ab) * w2;
+                w3
             },
             Singlefold => sig * match xa {
                 x if x > a => -xa + 2.0 * (a.abs()),
