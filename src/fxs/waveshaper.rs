@@ -1,3 +1,4 @@
+use crate::fxs::utils::hard_clip;
 use std::f32::consts::PI;
 use nih_plug::{prelude::*, util::gain_to_db};
 
@@ -33,10 +34,9 @@ impl FunctionType {
         use FunctionType::*;
         let sig = x.signum();
         let xa = x.abs();
-        let c = |x: f32| x.min(a).max(-a);
         match self {
-            HardClip       => c(x),
-            ScaledClip     => c(x * a),
+            HardClip       => hard_clip(x, a),
+            ScaledClip     => hard_clip(x * a, a),
             TwoTanh        => (2.0 * x).tanh() * a,
             Sqrt           => sig * (xa.sqrt() * a),
             Reciprocal     => 2.0 * sig * (a - (a / (xa + 1.0))),
