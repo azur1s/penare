@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, atomic::{Ordering, AtomicUsize}};
 use nih_plug::prelude::*;
 
 mod params;
@@ -18,7 +18,12 @@ use fxs::{
 struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
-    /// Filters
+    // Waveshapers (for the UI)
+    pos_fn: Arc<AtomicUsize>,
+    pos_fp: Arc<AtomicF32>,
+    neg_fn: Arc<AtomicUsize>,
+    neg_fp: Arc<AtomicF32>,
+    // Filters
     f1: [filter::Biquad; 2],
     f2: [filter::Biquad; 2],
 }
@@ -28,6 +33,10 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
+            pos_fn: Arc::new(AtomicUsize::new(waveshaper::FunctionType::HardClip as usize)),
+            pos_fp: Arc::new(AtomicF32::new(util::db_to_gain(0.0))),
+            neg_fn: Arc::new(AtomicUsize::new(waveshaper::FunctionType::HardClip as usize)),
+            neg_fp: Arc::new(AtomicF32::new(util::db_to_gain(0.0))),
             f1: [filter::Biquad::default(); 2],
             f2: [filter::Biquad::default(); 2],
         }
@@ -81,6 +90,10 @@ impl Plugin for Penare {
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         editor::create(
             self.params.clone(),
+            self.pos_fn.clone(),
+            self.pos_fp.clone(),
+            self.neg_fn.clone(),
+            self.neg_fp.clone(),
             self.params.editor_state.clone(),
         )
     }
@@ -182,15 +195,16 @@ impl Plugin for Penare {
                         (self.params.neg_function_type.value(),
                         self.params.neg_function_param.smoothed.next())
                     };
-                    let mut wss = ft.apply(*sample, fp);
                     // Mix between the original signal and the waveshaped signal
-                    let fm = if *sample >= 0.0 {
-                        self.params.pos_function_mix.smoothed.next()
-                    } else {
-                        self.params.neg_function_mix.smoothed.next()
-                    };
-                    wss = mix_between(*sample, wss, fm);
-                    (wss, fp)
+                    (mix_between(
+                        *sample,
+                        ft.apply(*sample, fp),
+                        if *sample >= 0.0 {
+                            self.params.pos_function_mix.smoothed.next()
+                        } else {
+                            self.params.neg_function_mix.smoothed.next()
+                        },
+                    ), fp)
                 } else {
                     // Otherwise, use the function type for the shape of the signal
                     let fp = if *sample >= 0.0 {
@@ -198,15 +212,19 @@ impl Plugin for Penare {
                     } else {
                         self.params.neg_function_param.smoothed.next()
                     };
-                    (if *sample >= 0.0 {
-                        let mut pws = self.params.pos_function_type.value().apply(*sample, fp);
-                        pws = mix_between(*sample, pws, self.params.pos_function_mix.smoothed.next());
-                        pws
-                    } else {
-                        let mut nws = self.params.neg_function_type.value().apply(*sample, fp);
-                        nws = mix_between(*sample, nws, self.params.neg_function_mix.smoothed.next());
-                        nws
-                    }, fp)
+                    (mix_between(
+                        *sample,
+                        if *sample >= 0.0 {
+                            self.params.pos_function_type.value()
+                        } else {
+                            self.params.neg_function_type.value()
+                        }.apply(*sample, fp),
+                        if *sample >= 0.0 {
+                            self.params.pos_function_mix.smoothed.next()
+                        } else {
+                            self.params.neg_function_mix.smoothed.next()
+                        },
+                    ), fp)
                 };
                 // Clip the waveshaped signal
                 if clip {
@@ -257,6 +275,24 @@ impl Plugin for Penare {
 
             // Only calculate the UI-related data if the editor is open.
             if self.params.editor_state.is_open() {
+                if self.pos_fn.load(Ordering::Relaxed) != self.params.pos_function_type.value().id() {
+                    self.pos_fn.store(self.params.pos_function_type.value().id(), Ordering::Relaxed);
+                }
+                if self.neg_fn.load(Ordering::Relaxed) != self.params.neg_function_type.value().id() {
+                    self.neg_fn.store(self.params.neg_function_type.value().id(), Ordering::Relaxed);
+                }
+                if self.params.pos_function_param.smoothed.is_smoothing() {
+                    self.pos_fp.store(
+                        self.params.pos_function_param.smoothed.next(),
+                        Ordering::Relaxed,
+                    );
+                }
+                if self.params.neg_function_param.smoothed.is_smoothing() {
+                    self.neg_fp.store(
+                        self.params.neg_function_param.smoothed.next(),
+                        Ordering::Relaxed,
+                    );
+                }
             }
         }
 

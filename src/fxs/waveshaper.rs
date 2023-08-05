@@ -5,7 +5,7 @@ use nih_plug::{prelude::*, util::gain_to_db};
 #[derive(Clone, Copy, Enum, PartialEq)]
 pub enum FunctionType {
     // Classic hard clip
-    HardClip,
+    HardClip = 0,
     // "Scaled" clipping (t * x)
     ScaledClip,
     // tanh(2x) * t
@@ -54,7 +54,7 @@ impl FunctionType {
             },
             Sinusoidal => {
                 // Normalize
-                let ab = (gain_to_db(a) / 30.0).abs();
+                let ab = gain_to_db(a.abs()) / 30.0;
                 let w1 = (2.0 * PI * x * (1.0 + 3.0 * ab)).sin();
                 let w2 = (1.0 - ab) * x + ab * w1;
                 let w3 = (1.0 - 0.3 * ab) * w2;
@@ -64,6 +64,26 @@ impl FunctionType {
                 x if x > a => -xa + 2.0 * (a.abs()),
                 _          => xa,
             },
+        }
+    }
+
+    pub fn id(&self) -> usize {
+        *self as usize
+    }
+
+    pub fn from_id(id: usize) -> Option<Self> {
+        match id {
+            0 => Some(FunctionType::HardClip),
+            1 => Some(FunctionType::ScaledClip),
+            2 => Some(FunctionType::TwoTanh),
+            3 => Some(FunctionType::Sqrt),
+            4 => Some(FunctionType::Reciprocal),
+            5 => Some(FunctionType::ReciprocalTanh),
+            6 => Some(FunctionType::Softdrive),
+            7 => Some(FunctionType::TanhTwoAtanh),
+            8 => Some(FunctionType::Sinusoidal),
+            9 => Some(FunctionType::Singlefold),
+            _ => None,
         }
     }
 }

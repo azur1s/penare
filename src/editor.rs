@@ -1,5 +1,5 @@
 use crate::PenareParams;
-use std::sync::Arc;
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 use nih_plug::prelude::*;
 use nih_plug_vizia::{
     vizia::prelude::*,
@@ -9,19 +9,29 @@ use nih_plug_vizia::{
     create_vizia_editor,
 };
 
+mod waveshaper_display;
+
 #[derive(Lens)]
 struct Data {
     params: Arc<PenareParams>,
+    pos_function_type: Arc<AtomicUsize>,
+    pos_function_param: Arc<AtomicF32>,
+    neg_function_type: Arc<AtomicUsize>,
+    neg_function_param: Arc<AtomicF32>,
 }
 
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (400, 550))
+    ViziaState::new(|| (400, 700))
 }
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
+    pos_function_type: Arc<AtomicUsize>,
+    pos_function_param: Arc<AtomicF32>,
+    neg_function_type: Arc<AtomicUsize>,
+    neg_function_param: Arc<AtomicF32>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
@@ -30,6 +40,10 @@ pub(crate) fn create(
 
         Data {
             params: params.clone(),
+            pos_function_type: pos_function_type.clone(),
+            pos_function_param: pos_function_param.clone(),
+            neg_function_type: neg_function_type.clone(),
+            neg_function_param: neg_function_param.clone(),
         }.build(cx);
 
         PopupData::default().build(cx);
@@ -38,6 +52,16 @@ pub(crate) fn create(
 
         VStack::new(cx, |cx| {
             // TODO: Implement waveform display
+            waveshaper_display::WaveshaperDisplay::new(
+                cx,
+                Data::pos_function_type,
+                Data::pos_function_param,
+                Data::neg_function_type,
+                Data::neg_function_param,
+            )
+            .width(Percentage(100.0))
+            .height(Pixels(200.0))
+            .background_color(Color::rgb(0, 0, 0));
 
             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                 VStack::new(cx, |cx| {
