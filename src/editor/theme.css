@@ -1,0 +1,89 @@
+/* nih-plug-vizia does not support css variables :( */
+/*
+Colors are from carbon design system (@carbon/colors)
+:root {
+    --coolGrayHover10:  #e4e9f1;
+    --coolGrayHover50:  #757b85;
+    --coolGray90Hover:  #2b3236;
+    --coolGrayHover100: #222a2f;
+
+    --coolGray10:  #f2f4f8;
+    --coolGray50:  #878d96;
+    --coolGray90:  #21272a;
+    --coolGray100: #121619;
+
+    --red50: #fa4d56;
+    --red50Hover: #ee0713;
+}
+*/
+
+waveshaper-display {
+    background-color: #121619;
+    border-color: #878d96;
+    color: #fa4d56;
+}
+
+param-button {
+    background-color: #121619;
+    border-color: #878d96;
+    color: #f2f4f8;
+    transition: background-color 0.1 0;
+}
+param-button:hover {
+    background-color: #757b85;
+    transition: background-color 0.1 0;
+}
+param-button:checked {
+    background-color: #fa4d56;
+    transition: background-color 0.1 0;
+}
+param-button:checked:hover {
+    background-color: #ee0713;
+    transition: background-color 0.1 0;
+}
+
+param-slider {
+    background-color: #21272a;
+    border-color: #878d96;
+    transition: background-color 0.1 0;
+}
+param-slider:hover {
+    background-color: #2b3236;
+    transition: background-color 0.1 0;
+}
+param-slider:active {
+    background-color: #2b3236;
+    transition: background-color 0.1 0;
+}
+param-slider .fill {
+    background-color: #fa4d56;
+}
+param-slider .fill--modulation {
+    background-color: #ee0713;
+}
+
+.params {
+    background-color: #121619;
+    color: #f2f4f8;
+}
+.params scrollbar {
+    background-color: #21272a;
+}
+.params scrollbar .thumb {
+    background-color: #878d96;
+    transition: background-color 0.1 0;
+}
+.params scrollbar .thumb:hover {
+    background-color: #757b85;
+    transition: background-color 0.1 0;
+}
+
+.header {
+    color: #f2f4f8;
+    font-weight: bold;
+}
+
+.footer {
+    background-color: #21272a;
+    color: #f2f4f8;
+}

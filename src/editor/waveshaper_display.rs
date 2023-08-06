@@ -25,7 +25,7 @@ impl WaveshaperDisplay {
 
 impl View for WaveshaperDisplay {
     fn element(&self) -> Option<&'static str> {
-        Some("function-display")
+        Some("waveshaper-display")
     }
 
     fn draw(&self, cx: &mut DrawContext, canvas: &mut Canvas) {
@@ -57,7 +57,7 @@ impl View for WaveshaperDisplay {
 
         // Draw x and y axis
         let mut path = vg::Path::new();
-        let paint = vg::Paint::color(Color::rgb(127, 127, 127).into())
+        let paint = vg::Paint::color(cx.border_color().cloned().unwrap_or_default().into())
             .with_line_width(line_width);
         path.move_to(0.0, bounds.h * 0.5);
         path.line_to(bounds.w, bounds.h * 0.5);
@@ -87,7 +87,7 @@ impl View for WaveshaperDisplay {
         canvas.stroke_path(&mut path, &paint);
 
         let mut path = vg::Path::new();
-        let paint = vg::Paint::color(Color::rgb(255, 255, 255).into())
+        let paint = vg::Paint::color(cx.font_color().cloned().unwrap_or_default().into())
             .with_line_width(line_width);
 
         for x in 0..(bounds.w as usize) {

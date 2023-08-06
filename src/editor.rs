@@ -23,14 +23,17 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
     ViziaState::new(|| (400, 700))
 }
 
+const FONT: &[u8] = include_bytes!("../assets/OverusedGrotesk-VF.ttf");
+
 pub(crate) fn create(
     params: Arc<PenareParams>,
     waveshaper_data: Arc<Mutex<WaveshapersData>>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
-        assets::register_noto_sans_light(cx);
-        assets::register_noto_sans_thin(cx);
+        cx.add_fonts_mem(&[FONT]);
+
+        cx.add_theme(include_str!("editor/theme.css"));
 
         Data {
             params: params.clone(),
@@ -48,8 +51,7 @@ pub(crate) fn create(
                 Data::waveshaper_data,
             )
             .width(Percentage(100.0))
-            .height(Pixels(200.0))
-            .background_color(Color::rgb(0, 0, 0));
+            .height(Pixels(200.0));
 
             ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                 VStack::new(cx, |cx| {
@@ -78,24 +80,25 @@ pub(crate) fn create(
                             })
                         };
                     }
-                    macro_rules! label {
+                    macro_rules! header {
                         ($cx:ident, $label:expr) => {
                             HStack::new($cx, |cx| {
                                 Label::new(cx, $label)
                                 .font_size(24.0);
                             })
+                            .class("header")
                             .child_space(Stretch(1.0));
                         };
                     }
 
-                    label!(cx, "Mix");
+                    header!(cx, "Mix");
                     slider!(cx, "Mix", mix);
                     button!(cx, "Hard Clip Output", output_clip);
                     slider!(cx, "Output Clip Threshold", output_clip_threshold);
                     slider!(cx, "Input Gain", input_gain);
                     slider!(cx, "Output Gain", output_gain);
 
-                    label!(cx, "Waveshaper");
+                    header!(cx, "Waveshaper");
                     slider!(cx, "Function Mix", function_mix);
                     slider!(cx, "+ Function Type", pos_function_type);
                     slider!(cx, "+ Function Parameter", pos_function_param);
@@ -106,21 +109,21 @@ pub(crate) fn create(
                     slider!(cx, "Copy From", copy_function);
                     button!(cx, "Flip Phase", flip);
 
-                    label!(cx, "Rectifier");
+                    header!(cx, "Rectifier");
                     button!(cx, "Rectify", rectify);
                     slider!(cx, "Rectify Mix", rectify_mix);
                     slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
                     slider!(cx, "Rectify Type", rectify_type);
                     button!(cx, "Flip Rectified Signal", rectify_flip);
 
-                    label!(cx, "Crusher");
+                    header!(cx, "Crusher");
                     button!(cx, "Crush", crush);
                     slider!(cx, "Crush Mix", crush_mix);
                     slider!(cx, "Crush Mix In", crush_mix_in);
                     slider!(cx, "Crush Type", crush_type);
                     slider!(cx, "Crush Step", crush_step);
 
-                    label!(cx, "Filter");
+                    header!(cx, "Filter");
                     slider!(cx, "Excess Mix", excess_mix);
                     slider!(cx, "Filter 1 Type", f1_type);
                     slider!(cx, "Filter 1 Freq", f1_freq);
@@ -132,6 +135,7 @@ pub(crate) fn create(
                 })
                 .row_between(Pixels(10.0));
             })
+            .class("params")
             .width(Percentage(100.0));
 
             HStack::new(cx, |cx| {
@@ -143,11 +147,10 @@ pub(crate) fn create(
                 Label::new(cx, crate::Penare::VERSION)
                 .font_size(small);
             })
+            .class("footer")
             .width(Percentage(100.0))
             .height(Pixels(40.0))
-            .background_color(Color::rgb(200, 200, 200))
             .child_space(Stretch(1.0))
-            .child_top(Stretch(1.0))
             .child_bottom(Stretch(1.0));
         })
         .row_between(Pixels(0.0))
