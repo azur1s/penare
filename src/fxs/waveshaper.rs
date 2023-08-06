@@ -66,6 +66,18 @@ impl FunctionType {
     }
 }
 
+impl From<usize> for FunctionType {
+    fn from(id: usize) -> FunctionType {
+        FunctionType::from_id(id)
+    }
+}
+
+impl From<FunctionType> for usize {
+    fn from(t: FunctionType) -> usize {
+        t.id()
+    }
+}
+
 impl std::fmt::Display for FunctionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

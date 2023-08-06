@@ -273,36 +273,14 @@ impl Plugin for Penare {
 impl Penare {
     fn update_waveshapers_data(&mut self) {
         let waveshapers_data = self.waveshapers_data.lock().unwrap();
-        if waveshapers_data.get_input_gain() != self.params.input_gain.smoothed.next() {
-            waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
-        }
-        if waveshapers_data.get_output_gain() != self.params.output_gain.smoothed.next() {
-            waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
-        }
-        if waveshapers_data.get_pos_function_type() != self.params.pos_function_type.value() {
-            waveshapers_data.set_pos_function_type(self.params.pos_function_type.value());
-        }
-        if waveshapers_data.get_pos_function_param() != self.params.pos_function_param.smoothed.next() {
-            waveshapers_data.set_pos_function_param(
-                self.params.pos_function_param.smoothed.next(),
-            );
-        }
-        if waveshapers_data.get_neg_function_type() != self.params.neg_function_type.value() {
-            waveshapers_data.set_neg_function_type(self.params.neg_function_type.value());
-        }
-        if waveshapers_data.get_neg_function_param() != self.params.neg_function_param.smoothed.next() {
-            waveshapers_data.set_neg_function_param(
-                self.params.neg_function_param.smoothed.next(),
-            );
-        }
-        if waveshapers_data.get_clip() != self.params.output_clip.value() {
-            waveshapers_data.set_clip(self.params.output_clip.value());
-        }
-        if waveshapers_data.get_clip_threshold() != self.params.output_clip_threshold.smoothed.next() {
-            waveshapers_data.set_clip_threshold(
-                self.params.output_clip_threshold.smoothed.next(),
-            );
-        }
+        waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
+        waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
+        waveshapers_data.set_pos_function_type(self.params.pos_function_type.value());
+        waveshapers_data.set_pos_function_param(self.params.pos_function_param.smoothed.next());
+        waveshapers_data.set_neg_function_type(self.params.neg_function_type.value());
+        waveshapers_data.set_neg_function_param(self.params.neg_function_param.smoothed.next());
+        waveshapers_data.set_clip(self.params.output_clip.value());
+        waveshapers_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
     }
 
     fn update_fs(&mut self) {

@@ -2,6 +2,7 @@ use crate::fxs::waveshaper::FunctionType;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
+use paste::paste;
 
 pub struct WaveshapersData {
     /// Input gain
@@ -37,69 +38,60 @@ impl Default for WaveshapersData {
     }
 }
 
-// TODO: Probably turn all of this into macros
+// Macro for defining getters function
+macro_rules! get {
+    // Normal value getters
+    ($name:ident -> $t:ty) => {
+        paste! {
+            pub fn [<get_ $name>](&self) -> $t {
+                self.$name.load(Ordering::Relaxed).into()
+            }
+        }
+    };
+    // "Polar" value getters
+    ($name:ident polar -> $t:ty) => {
+        paste! {
+            pub fn [<get_pos_ $name>](&self) -> $t {
+                self.[<$name s>][0].load(Ordering::Relaxed).into()
+            }
+            pub fn [<get_neg_ $name>](&self) -> $t {
+                self.[<$name s>][0].load(Ordering::Relaxed).into()
+            }
+        }
+    };
+}
+macro_rules! set {
+    ($name:ident <- $t:ty) => {
+        paste! {
+            pub fn [<set_ $name>](&self, $name: $t) {
+                self.$name.store($name, Ordering::Relaxed);
+            }
+        }
+    };
+    ($name:ident polar <- $t:ty) => {
+        paste! {
+            pub fn [<set_pos_ $name>](&self, $name: $t) {
+                self.[<$name s>][0].store($name.into(), Ordering::Relaxed);
+            }
+            pub fn [<set_neg_ $name>](&self, $name: $t) {
+                self.[<$name s>][1].store($name.into(), Ordering::Relaxed);
+            }
+        }
+    };
+}
+
 impl WaveshapersData {
-    pub fn get_input_gain(&self) -> f32 {
-        self.input_gain.load(Ordering::Relaxed)
-    }
+    get!(input_gain           -> f32);
+    get!(output_gain          -> f32);
+    get!(function_type  polar -> FunctionType);
+    get!(function_param polar -> f32);
+    get!(clip                 -> bool);
+    get!(clip_threshold       -> f32);
 
-    pub fn get_output_gain(&self) -> f32 {
-        self.output_gain.load(Ordering::Relaxed)
-    }
-
-    pub fn get_pos_function_type(&self) -> FunctionType {
-        FunctionType::from_id(self.function_types[0].load(Ordering::Relaxed))
-    }
-
-    pub fn get_neg_function_type(&self) -> FunctionType {
-        FunctionType::from_id(self.function_types[1].load(Ordering::Relaxed))
-    }
-
-    pub fn get_pos_function_param(&self) -> f32 {
-        self.function_params[0].load(Ordering::Relaxed)
-    }
-
-    pub fn get_neg_function_param(&self) -> f32 {
-        self.function_params[1].load(Ordering::Relaxed)
-    }
-
-    pub fn get_clip(&self) -> bool {
-        self.clip.load(Ordering::Relaxed)
-    }
-
-    pub fn get_clip_threshold(&self) -> f32 {
-        self.clip_threshold.load(Ordering::Relaxed)
-    }
-
-    pub fn set_input_gain(&self, input_gain: f32) {
-        self.input_gain.store(input_gain, Ordering::Relaxed);
-    }
-
-    pub fn set_output_gain(&self, output_gain: f32) {
-        self.output_gain.store(output_gain, Ordering::Relaxed);
-    }
-
-    pub fn set_pos_function_type(&self, function_type: FunctionType) {
-        self.function_types[0].store(function_type.id(), Ordering::Relaxed);
-    }
-
-    pub fn set_neg_function_type(&self, function_type: FunctionType) {
-        self.function_types[1].store(function_type.id(), Ordering::Relaxed);
-    }
-
-    pub fn set_pos_function_param(&self, function_param: f32) {
-        self.function_params[0].store(function_param, Ordering::Relaxed);
-    }
-
-    pub fn set_neg_function_param(&self, function_param: f32) {
-        self.function_params[1].store(function_param, Ordering::Relaxed);
-    }
-
-    pub fn set_clip(&self, clip: bool) {
-        self.clip.store(clip, Ordering::Relaxed);
-    }
-
-    pub fn set_clip_threshold(&self, clip_threshold: f32) {
-        self.clip_threshold.store(clip_threshold, Ordering::Relaxed);
-    }
+    set!(input_gain           <- f32);
+    set!(output_gain          <- f32);
+    set!(function_type  polar <- FunctionType);
+    set!(function_param polar <- f32);
+    set!(clip                 <- bool);
+    set!(clip_threshold       <- f32);
 }
