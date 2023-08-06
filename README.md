@@ -1,6 +1,8 @@
 # Penare
 
-A wonky distortion plugin :3 
+A wonky distortion plugin :3
+
+![UI](assets/ui_0.2.0.png)
 
 ## Installing
 For Windows:
