@@ -8,12 +8,18 @@ For Windows:
 2. Unzip and find the `.vst3` or `.clap` file inside and move it to your VST3/CLAP directory
 
 For MacOS:
-1. TODO
+1. Do the same as Windows
+2. If MacOS thinks that I'm a evil virus programmer 😈 and you don't believe I am 😇 then you can run this command in terminal:
+    ```shell
+    # Replace `PATH_TO_PLUGIN` to where your plugin is
+    xattr -cr PATH_TO_PLUGIN
+    ```
+    Otherwise, if you don't trust me, then don't do it
 
 ## Features
 - Pre and Post gain control (no way)
-- Filter control (like which range the distortion is applied)
-- Symmetric and Asymmetric waveshaping! ([Waveshapers list](https://github.com/azur1s/penare/wiki/Waveshapers))
+- Filter control (like which range the distortion is applied) and you can mix it back afterward :O
+- Symmetric and Asymmetric waveshaping!
 - Rectifier
   - Half and Full rectify
   - Mix between dry and wet signal
@@ -27,10 +33,13 @@ Some of the algorithms probably is not correct so you can fix it if you think it
 
 ## Building
 
-The `build.ps1` and `build_debug.ps1` is for me to use. Although you can use it, if it works.
+The [`debug.ps1`](debug.ps1) is for me to use. Although you can use it, if it works.
 
 Use this to compile to VST3 and CLAP.
 
 ```shell
+# Debug build, huge file size
+cargo xtask bundle penare
+# Release build, small file size
 cargo xtask bundle penare --release
 ```
