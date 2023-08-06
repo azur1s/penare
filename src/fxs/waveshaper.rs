@@ -66,25 +66,17 @@ impl FunctionType {
             },
         }
     }
-
-    pub fn id(&self) -> usize {
-        *self as usize
-    }
-
-    pub fn from_id(id: usize) -> Self {
-        FunctionType::from_index(id)
-    }
 }
 
 impl From<usize> for FunctionType {
     fn from(id: usize) -> FunctionType {
-        FunctionType::from_id(id)
+        Self::from_index(id)
     }
 }
 
 impl From<FunctionType> for usize {
     fn from(t: FunctionType) -> usize {
-        t.id()
+        t as usize
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::fxs::waveshaper::FunctionType;
+use crate::{fxs::waveshaper::FunctionType, params::OAB};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
@@ -21,11 +21,15 @@ pub struct WaveshapersData {
     pub clip: AtomicBool,
     /// Clip threshold
     pub clip_threshold: AtomicF32,
+    /// Copy functions.
+    pub copy: AtomicUsize,
+    /// Flip phase.
+    pub flip: AtomicBool,
 }
 
 impl Default for WaveshapersData {
     fn default() -> Self {
-        let f = FunctionType::HardClip.id();
+        let f = FunctionType::HardClip.into();
         let db = util::db_to_gain(0.0);
         Self {
             input_gain: AtomicF32::new(db),
@@ -34,6 +38,8 @@ impl Default for WaveshapersData {
             function_params: [AtomicF32::new(db), AtomicF32::new(db)],
             clip: AtomicBool::new(true),
             clip_threshold: AtomicF32::new(db),
+            copy: AtomicUsize::new(OAB::Off.into()),
+            flip: AtomicBool::new(false),
         }
     }
 }
@@ -64,7 +70,7 @@ macro_rules! set {
     ($name:ident <- $t:ty) => {
         paste! {
             pub fn [<set_ $name>](&self, $name: $t) {
-                self.$name.store($name, Ordering::Relaxed);
+                self.$name.store($name.into(), Ordering::Relaxed);
             }
         }
     };
@@ -87,6 +93,8 @@ impl WaveshapersData {
     get!(function_param polar -> f32);
     get!(clip                 -> bool);
     get!(clip_threshold       -> f32);
+    get!(copy                 -> OAB);
+    get!(flip                 -> bool);
 
     set!(input_gain           <- f32);
     set!(output_gain          <- f32);
@@ -94,4 +102,6 @@ impl WaveshapersData {
     set!(function_param polar <- f32);
     set!(clip                 <- bool);
     set!(clip_threshold       <- f32);
+    set!(copy                 <- OAB);
+    set!(flip                 <- bool);
 }

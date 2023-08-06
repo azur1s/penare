@@ -13,8 +13,20 @@ const MIN_FREQ: f32 = 0.0;
 pub enum OAB { Off, Pos, Neg }
 
 impl OAB {
-    pub fn is_false(&self)    -> bool { matches!(self, OAB::Off) }
+    pub fn is_off(&self)      -> bool { matches!(self, OAB::Off) }
     pub fn is_positive(&self) -> bool { matches!(self, OAB::Pos) }
+}
+
+impl From<usize> for OAB {
+    fn from(id: usize) -> Self {
+        Self::from_index(id)
+    }
+}
+
+impl From<OAB> for usize {
+    fn from(oab: OAB) -> Self {
+        oab as usize
+    }
 }
 
 impl std::fmt::Display for OAB {

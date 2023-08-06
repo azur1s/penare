@@ -19,7 +19,7 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (400, 700))
+    ViziaState::new(|| (800, 700))
 }
 
 const FONT_REGULAR: &[u8] = include_bytes!("../assets/CommitMono-Regular.otf");
@@ -57,50 +57,66 @@ pub(crate) fn create(
             .width(Percentage(100.0))
             .height(Pixels(200.0));
 
-            ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
-                VStack::new(cx, |cx| {
-                    macro_rules! hstack {
-                        ($cx:ident, $f:expr) => {
-                            HStack::new($cx, $f)
-                            .child_top(Stretch(1.0))
-                            .child_bottom(Stretch(1.0))
-                            .col_between(Pixels(10.0))
-                            .left(Pixels(10.0))
-                        };
-                    }
-                    macro_rules! slider {
-                        ($cx:ident, $label:expr, $param:ident) => {
-                            hstack!($cx, |cx| {
-                                ParamSlider::new(cx, Data::params, |p| &p.$param);
-                                Label::new(cx, $label);
-                            })
-                        };
-                    }
-                    macro_rules! button {
-                        ($cx:ident, $label:expr, $param:ident) => {
-                            hstack!($cx, |cx| {
-                                ParamButton::new(cx, Data::params, |p| &p.$param);
-                                Label::new(cx, $label);
-                            })
-                        };
-                    }
-                    macro_rules! header {
-                        ($cx:ident, $label:expr) => {
-                            HStack::new($cx, |cx| {
-                                Label::new(cx, &format!("λ {}", $label));
-                            })
-                            .class("header")
-                            .child_space(Stretch(1.0));
-                        };
-                    }
+            macro_rules! hstack {
+                ($cx:ident, $f:expr) => {
+                    HStack::new($cx, $f)
+                    .child_top(Stretch(1.0))
+                    .child_bottom(Stretch(1.0))
+                    .col_between(Pixels(10.0))
+                    .left(Pixels(10.0))
+                };
+            }
+            macro_rules! slider {
+                ($cx:ident, $label:expr, $param:ident) => {
+                    hstack!($cx, |cx| {
+                        ParamSlider::new(cx, Data::params, |p| &p.$param);
+                        Label::new(cx, $label);
+                    })
+                };
+            }
+            macro_rules! button {
+                ($cx:ident, $label:expr, $param:ident) => {
+                    hstack!($cx, |cx| {
+                        ParamButton::new(cx, Data::params, |p| &p.$param);
+                        Label::new(cx, $label);
+                    })
+                };
+            }
+            macro_rules! header {
+                ($cx:ident, $label:expr) => {
+                    HStack::new($cx, |cx| {
+                        Label::new(cx, &format!("λ {}", $label));
+                    })
+                    .class("header")
+                    .child_space(Stretch(1.0));
+                };
+            }
 
-                    header!(cx, "Mix");
-                    slider!(cx, "Mix", mix);
-                    button!(cx, "Hard Clip Output", output_clip);
-                    slider!(cx, "Output Clip Threshold", output_clip_threshold);
-                    slider!(cx, "Input Gain", input_gain);
-                    slider!(cx, "Output Gain", output_gain);
+            HStack::new(cx, |cx| {
+                ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                    VStack::new(cx, |cx| {
+                        header!(cx, "Mix");
+                        slider!(cx, "Mix", mix);
+                        button!(cx, "Hard Clip Output", output_clip);
+                        slider!(cx, "Output Clip Threshold", output_clip_threshold);
+                        slider!(cx, "Input Gain", input_gain);
+                        slider!(cx, "Output Gain", output_gain);
 
+                        header!(cx, "Filter");
+                        slider!(cx, "Excess Mix", excess_mix);
+                        slider!(cx, "Filter 1 Type", f1_type);
+                        slider!(cx, "Filter 1 Freq", f1_freq);
+                        slider!(cx, "Filter 1 Q", f1_q);
+                        slider!(cx, "Filter 2 Type", f2_type);
+                        slider!(cx, "Filter 2 Freq", f2_freq);
+                        slider!(cx, "Filter 2 Q", f2_q);
+                        button!(cx, "Excess Signal Bypass", excess_bypass);
+                    })
+                    .row_between(Pixels(10.0));
+                })
+                .class("params");
+
+                ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                     header!(cx, "Waveshaper");
                     slider!(cx, "Function Mix", function_mix);
                     slider!(cx, "+ Function Type", pos_function_type);
@@ -111,21 +127,11 @@ pub(crate) fn create(
                     slider!(cx, "- Function Mix", neg_function_mix);
                     slider!(cx, "Copy From", copy_function);
                     button!(cx, "Flip Phase", flip);
-
-                    header!(cx, "Filter");
-                    slider!(cx, "Excess Mix", excess_mix);
-                    slider!(cx, "Filter 1 Type", f1_type);
-                    slider!(cx, "Filter 1 Freq", f1_freq);
-                    slider!(cx, "Filter 1 Q", f1_q);
-                    slider!(cx, "Filter 2 Type", f2_type);
-                    slider!(cx, "Filter 2 Freq", f2_freq);
-                    slider!(cx, "Filter 2 Q", f2_q);
-                    button!(cx, "Excess Signal Bypass", excess_bypass);
                 })
-                .row_between(Pixels(10.0));
+                .class("params");
             })
-            .class("params")
             .width(Percentage(100.0));
+
 
             HStack::new(cx, |cx| {
                 Label::new(cx, &format!(

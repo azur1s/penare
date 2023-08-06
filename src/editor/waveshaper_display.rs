@@ -95,11 +95,22 @@ impl View for WaveshaperDisplay {
             // Sin function
             let y = sin(x) * input_gain;
             // Apply function
-            let y = if -y >= 0.0 {
-                pos_function_type.apply(y, pos_function_param)
+            let y = if !data.get_copy().is_off() {
+                let (ft, fp) = if data.get_copy().is_positive() {
+                    (pos_function_type, pos_function_param)
+                } else {
+                    (neg_function_type, neg_function_param)
+                };
+                ft.apply(y, fp)
             } else {
-                neg_function_type.apply(y, neg_function_param)
+                if -y >= 0.0 {
+                    pos_function_type.apply(y, pos_function_param)
+                } else {
+                    neg_function_type.apply(y, neg_function_param)
+                }
             };
+            // Flip
+            let y = if data.get_flip() { -y } else { y };
             // Clip output
             let y = if clip {
                 hard_clip(y, clip_threshold)

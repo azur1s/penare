@@ -167,7 +167,7 @@ impl Plugin for Penare {
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
                 // Wave shaped signal
-                let wss = if !should_copy.is_false() {
+                let wss = if !should_copy.is_off() {
                     // If "Copy Function" is on then the function type is used
                     // for the both positive and negative shape
                     let (ft, fp) = if should_copy.is_positive() {
@@ -263,6 +263,8 @@ impl Penare {
         waveshapers_data.set_neg_function_param(self.params.neg_function_param.smoothed.next());
         waveshapers_data.set_clip(self.params.output_clip.value());
         waveshapers_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
+        waveshapers_data.set_copy(self.params.copy_function.value());
+        waveshapers_data.set_flip(self.params.flip.value());
     }
 
     fn update_fs(&mut self) {
