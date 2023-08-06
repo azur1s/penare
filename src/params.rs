@@ -7,13 +7,14 @@ use nih_plug::prelude::*;
 use nih_plug_vizia::ViziaState;
 
 const MAX_FREQ: f32 = 22000.0;
-const MIN_FREQ: f32 = 1.0;
+const MIN_FREQ: f32 = 3.0;
 
 #[derive(Enum, PartialEq)]
 pub enum OAB { Off, Pos, Neg }
 
 impl OAB {
     pub fn is_off(&self)      -> bool { matches!(self, OAB::Off) }
+    pub fn is_on(&self)       -> bool { !self.is_off() }
     pub fn is_positive(&self) -> bool { matches!(self, OAB::Pos) }
 }
 

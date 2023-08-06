@@ -93,7 +93,12 @@ impl View for WaveshaperDisplay {
             // Sin function
             let y = sin(x) * data.get_input_gain();
             // Apply function
-            let (ft, fp, fm) = if (!data.get_copy().is_off() && data.get_copy().is_positive()) || -y >= 0.0 {
+            let (ft, fp, fm) = if match (data.get_copy().is_on(), data.get_copy().is_positive(), -y >= 0.0) {
+                (true,  true,  _   ) => true,
+                (true,  false, _   ) => false,
+                (false, _,    true ) => true,
+                (false, _,    false) => false,
+            } {
                 (pos_function_type, pos_function_param, pos_function_mix)
             } else {
                 (neg_function_type, neg_function_param, neg_function_mix)

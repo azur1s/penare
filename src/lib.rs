@@ -166,13 +166,17 @@ impl Plugin for Penare {
 
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
-                let (ft, fp, fm) = if
-                    // If "Copy Function" is on then the function type is used
-                    // for the both positive and negative shape
-                    (!should_copy.is_off() && should_copy.is_positive())
-                    // Otherwise, use the function type for the shape of the signal
-                    || -(*sample) >= 0.0
-                {
+                // Wave shaped signal
+                let (ft, fp, fm) = if match (should_copy.is_on(), should_copy.is_positive(), *sample >= 0.0) {
+                    // If copy is on and positive is selected
+                    (true,  true,  _   ) => true,
+                    // If copy is on and negative is selected
+                    (true,  false, _   ) => false,
+                    // If copy is off and phase is positive
+                    (false, _,    true ) => true,
+                    // If copy is off and phase is negative
+                    (false, _,    false) => false,
+                } {
                     (self.params.pos_function_type.value(),
                     self.params.pos_function_param.smoothed.next(),
                     self.params.pos_function_mix.smoothed.next())
@@ -181,7 +185,6 @@ impl Plugin for Penare {
                     self.params.neg_function_param.smoothed.next(),
                     self.params.neg_function_mix.smoothed.next())
                 };
-                // Wave shaped signal
                 let wss = mix_between(
                     *sample,
                     ft.apply(*sample, fp),
