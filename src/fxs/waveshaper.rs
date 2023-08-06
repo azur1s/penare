@@ -18,9 +18,6 @@ pub enum FunctionType {
     // Reciprocal but tanh :))
     // 2 * sign(x) * tanh(t - (t / 1 + |x|))
     ReciprocalTanh,
-    // Fig. 4.14 in DAFX
-    // Probably best used as distortion
-    Softdrive,
     // tanh(2atanh(2x)) * t
     TanhTwoAtanh,
     // (1 - t) * x + t * sin(2pi * x * (1 + 3t))
@@ -41,13 +38,6 @@ impl FunctionType {
             Sqrt           => sig * (xa.sqrt() * a),
             Reciprocal     => 2.0 * sig * (a - (a / (xa + 1.0))),
             ReciprocalTanh => 2.0 * sig * ((a - (a / (xa + 1.0))).tanh()),
-            // Softdrive generate some white noise when clipping
-            // I don't know if it's a correct behavior or not
-            Softdrive => sig * match xa {
-                x if x <= 1.0 / 3.0 * a => 2.0 * x,
-                x if x <= 2.0 / 3.0 * a => (3.0 - (2.0 - 3.0 * x).powi(2)) / 3.0,
-                _ => a,
-            },
             TanhTwoAtanh => sig * match xa {
                 x if x < a / 2.0 => (2.0 * (2.0 * x / a).atanh()).tanh() * a,
                 _ => a,
@@ -71,20 +61,8 @@ impl FunctionType {
         *self as usize
     }
 
-    pub fn from_id(id: usize) -> Option<Self> {
-        match id {
-            0 => Some(FunctionType::HardClip),
-            1 => Some(FunctionType::ScaledClip),
-            2 => Some(FunctionType::TwoTanh),
-            3 => Some(FunctionType::Sqrt),
-            4 => Some(FunctionType::Reciprocal),
-            5 => Some(FunctionType::ReciprocalTanh),
-            6 => Some(FunctionType::Softdrive),
-            7 => Some(FunctionType::TanhTwoAtanh),
-            8 => Some(FunctionType::Sinusoidal),
-            9 => Some(FunctionType::Singlefold),
-            _ => None,
-        }
+    pub fn from_id(id: usize) -> Self {
+        FunctionType::from_index(id)
     }
 }
 
@@ -97,7 +75,6 @@ impl std::fmt::Display for FunctionType {
             FunctionType::Sqrt           => write!(f, "Sqrt"),
             FunctionType::Reciprocal     => write!(f, "Reciprocal"),
             FunctionType::ReciprocalTanh => write!(f, "ReciprocalTanh"),
-            FunctionType::Softdrive      => write!(f, "Softdrive"),
             FunctionType::TanhTwoAtanh   => write!(f, "Tanh2Atanh"),
             FunctionType::Sinusoidal     => write!(f, "Sinusoidal"),
             FunctionType::Singlefold     => write!(f, "Singlefold"),

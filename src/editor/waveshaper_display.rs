@@ -1,4 +1,4 @@
-use crate::{fxs::waveshaper::FunctionType, data::WaveshapersData};
+use crate::{fxs::utils::hard_clip, data::WaveshapersData};
 use std::{
     f32::consts::PI,
     sync::{Arc, Mutex},
@@ -35,10 +35,14 @@ impl View for WaveshaperDisplay {
         }
 
         let data = self.waveshaper_data.lock().unwrap();
-        let pos_function_type = data.get_pos_function_type().unwrap_or(FunctionType::HardClip);
-        let neg_function_type = data.get_neg_function_type().unwrap_or(FunctionType::HardClip);
+        let input_gain = data.get_input_gain();
+        let output_gain = data.get_output_gain();
+        let pos_function_type = data.get_pos_function_type();
+        let neg_function_type = data.get_neg_function_type();
         let pos_function_param = data.get_pos_function_param();
         let neg_function_param = data.get_neg_function_param();
+        let clip = data.get_clip();
+        let clip_threshold = data.get_clip_threshold();
 
         let line_width = cx.style.dpi_factor as f32 * 1.5;
         // 1 <= scale <= 2;
@@ -60,8 +64,15 @@ impl View for WaveshaperDisplay {
         path.move_to(bounds.w * 0.5, 0.0);
         path.line_to(bounds.w * 0.5, bounds.h);
 
+        // Draw [-1, 1] lines
+        path.move_to(0.0, -1.0 * a * scale.recip() + a);
+        path.line_to(bounds.w, -1.0 * a * scale.recip() + a);
+        path.move_to(0.0, 1.0 * a * scale.recip() + a);
+        path.line_to(bounds.w, 1.0 * a * scale.recip() + a);
+
         let sin = |x: f32| (-x * PI / (0.5 * bounds.w)).sin();
 
+        // Draw sin function
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             let y = sin(x);
@@ -82,16 +93,21 @@ impl View for WaveshaperDisplay {
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             // Sin function
-            let y = sin(x);
+            let y = sin(x) * input_gain;
             // Apply function
             let y = if -y >= 0.0 {
                 pos_function_type.apply(y, pos_function_param)
             } else {
                 neg_function_type.apply(y, neg_function_param)
             };
+            // Clip output
+            let y = if clip {
+                hard_clip(y, clip_threshold)
+            } else {
+                y
+            } * output_gain;
             // Scale to view
-            let y = y * a * scale.recip()
-             + a;
+            let y = y * a * scale.recip() + a;
             // Draw
             if x == 0.0 {
                 path.move_to(x as f32, y);

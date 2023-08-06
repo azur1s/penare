@@ -92,9 +92,10 @@ pub(crate) fn create(
                     slider!(cx, "Mix", mix);
                     button!(cx, "Hard Clip Output", output_clip);
                     slider!(cx, "Output Clip Threshold", output_clip_threshold);
+                    slider!(cx, "Input Gain", input_gain);
+                    slider!(cx, "Output Gain", output_gain);
 
                     label!(cx, "Waveshaper");
-                    slider!(cx, "Pre Gain", pre_gain);
                     slider!(cx, "Function Mix", function_mix);
                     slider!(cx, "+ Function Type", pos_function_type);
                     slider!(cx, "+ Function Parameter", pos_function_param);
@@ -102,9 +103,7 @@ pub(crate) fn create(
                     slider!(cx, "- Function Type", neg_function_type);
                     slider!(cx, "- Function Parameter", neg_function_param);
                     slider!(cx, "- Function Mix", neg_function_mix);
-                    slider!(cx, "Post Gain", post_gain);
                     slider!(cx, "Copy From", copy_function);
-                    button!(cx, "Clip Function", clip_function);
                     button!(cx, "Flip Phase", flip);
 
                     label!(cx, "Rectifier");

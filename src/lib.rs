@@ -11,7 +11,7 @@ use data::WaveshapersData;
 use fxs::{
     filter,
     waveshaper,
-    utils::{mix_between, mix_in, hard_clip},
+    utils::{mix_between, mix_in},
 };
 
 struct Penare {
@@ -160,7 +160,7 @@ impl Plugin for Penare {
                 *sample = s;
 
                 // --- Pre-Gain ---
-                *sample *= self.params.pre_gain.smoothed.next(); // Pre-gain
+                *sample *= self.params.input_gain.smoothed.next();
 
                 // --- Distortions ---
                 // - Rectify
@@ -175,9 +175,8 @@ impl Plugin for Penare {
 
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
-                let clip = self.params.clip_function.value();
                 // Wave shaped signal
-                let (mut wss, fp) = if !should_copy.is_false() {
+                let wss = if !should_copy.is_false() {
                     // If "Copy Function" is on then the function type is used
                     // for the both positive and negative shape
                     let (ft, fp) = if should_copy.is_positive() {
@@ -188,7 +187,7 @@ impl Plugin for Penare {
                         self.params.neg_function_param.smoothed.next())
                     };
                     // Mix between the original signal and the waveshaped signal
-                    (mix_between(
+                    mix_between(
                         *sample,
                         ft.apply(*sample, fp),
                         if *sample >= 0.0 {
@@ -196,7 +195,7 @@ impl Plugin for Penare {
                         } else {
                             self.params.neg_function_mix.smoothed.next()
                         },
-                    ), fp)
+                    )
                 } else {
                     // Otherwise, use the function type for the shape of the signal
                     let fp = if *sample >= 0.0 {
@@ -204,7 +203,7 @@ impl Plugin for Penare {
                     } else {
                         self.params.neg_function_param.smoothed.next()
                     };
-                    (mix_between(
+                    mix_between(
                         *sample,
                         if *sample >= 0.0 {
                             self.params.pos_function_type.value()
@@ -216,12 +215,8 @@ impl Plugin for Penare {
                         } else {
                             self.params.neg_function_mix.smoothed.next()
                         },
-                    ), fp)
+                    )
                 };
-                // Clip the waveshaped signal
-                if clip {
-                    wss = hard_clip(*sample, fp);
-                }
                 // Flip the phase of the signal
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
@@ -236,7 +231,7 @@ impl Plugin for Penare {
                 }
 
                 // --- Post-Gain ---
-                *sample *= self.params.post_gain.smoothed.next(); // Post-gain
+                *sample *= self.params.output_gain.smoothed.next(); // Post-gain
 
                 // Filter mix
                 if !self.params.excess_bypass.value() {
@@ -278,24 +273,34 @@ impl Plugin for Penare {
 impl Penare {
     fn update_waveshapers_data(&mut self) {
         let waveshapers_data = self.waveshapers_data.lock().unwrap();
-        if waveshapers_data.get_pos_function_type().unwrap()
-        != self.params.pos_function_type.value() {
+        if waveshapers_data.get_input_gain() != self.params.input_gain.smoothed.next() {
+            waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
+        }
+        if waveshapers_data.get_output_gain() != self.params.output_gain.smoothed.next() {
+            waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
+        }
+        if waveshapers_data.get_pos_function_type() != self.params.pos_function_type.value() {
             waveshapers_data.set_pos_function_type(self.params.pos_function_type.value());
         }
-        if waveshapers_data.get_pos_function_param()
-        != self.params.pos_function_param.smoothed.next() {
+        if waveshapers_data.get_pos_function_param() != self.params.pos_function_param.smoothed.next() {
             waveshapers_data.set_pos_function_param(
                 self.params.pos_function_param.smoothed.next(),
             );
         }
-        if waveshapers_data.get_neg_function_type().unwrap()
-        != self.params.neg_function_type.value() {
+        if waveshapers_data.get_neg_function_type() != self.params.neg_function_type.value() {
             waveshapers_data.set_neg_function_type(self.params.neg_function_type.value());
         }
-        if waveshapers_data.get_neg_function_param()
-        != self.params.neg_function_param.smoothed.next() {
+        if waveshapers_data.get_neg_function_param() != self.params.neg_function_param.smoothed.next() {
             waveshapers_data.set_neg_function_param(
                 self.params.neg_function_param.smoothed.next(),
+            );
+        }
+        if waveshapers_data.get_clip() != self.params.output_clip.value() {
+            waveshapers_data.set_clip(self.params.output_clip.value());
+        }
+        if waveshapers_data.get_clip_threshold() != self.params.output_clip_threshold.smoothed.next() {
+            waveshapers_data.set_clip_threshold(
+                self.params.output_clip_threshold.smoothed.next(),
             );
         }
     }

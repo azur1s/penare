@@ -49,14 +49,17 @@ pub struct PenareParams {
     /// Final clip threshold
     #[id = "output-clip-threshold"]
     pub output_clip_threshold: FloatParam,
+    /// Input gain before effects
+    #[id = "input-gain"]
+    pub input_gain: FloatParam,
+    /// Output gain after effects
+    #[id = "output-gain"]
+    pub output_gain: FloatParam,
 
     // ──────────────────────────────
     // Waveshaper
     // ──────────────────────────────
 
-    /// Pre gain before waveshaping in decibels
-    #[id = "pre-gain"]
-    pub pre_gain: FloatParam,
     /// Mix between dry and wet signal (excluding gain)
     #[id = "function-mix"]
     pub function_mix: FloatParam,
@@ -78,15 +81,9 @@ pub struct PenareParams {
     /// Mix
     #[id = "neg-function-mix"]
     pub neg_function_mix: FloatParam,
-    /// Post gain after waveshaping
-    #[id = "post-gain"]
-    pub post_gain: FloatParam,
     /// Use function for the positive/negative shape too
     #[id = "copy-function"]
     pub copy_function: EnumParam<OAB>,
-    /// Wrap the function in hard clip function
-    #[id = "clip-function"]
-    pub clip_function: BoolParam,
     /// Flip the waveshaped signal
     #[id = "flip"]
     pub flip: BoolParam,
@@ -234,8 +231,9 @@ impl Default for PenareParams {
             mix:                   percentage!("Mix", 1.0),
             output_clip:           BoolParam::new("Output Clip", true),
             output_clip_threshold: db!("Output Clip Threshold", 30.0),
+            input_gain:            db!("Pre Gain", 30.0),
+            output_gain:           db!("Output Gain", 30.0),
 
-            pre_gain:           db!("Pre Gain", 30.0),
             function_mix:       percentage!("Function Mix", 1.0),
             pos_function_type:  EnumParam::new("Positive Function Type", waveshaper::FunctionType::HardClip),
             pos_function_param: db!("Positive Function Parameter", 30.0),
@@ -243,9 +241,7 @@ impl Default for PenareParams {
             neg_function_type:  EnumParam::new("Negative Function Type", waveshaper::FunctionType::HardClip),
             neg_function_param: db!("Negative Function Parameter", 30.0),
             neg_function_mix:   percentage!("Negative Function Mix", 1.0),
-            post_gain:          db!("Post Gain", 30.0),
             copy_function:      EnumParam::new("Copy Function", OAB::Off),
-            clip_function:      BoolParam::new("Clip Function", false),
             flip:               BoolParam::new("Flip", false),
 
             rectify:        BoolParam::new("Rectify", false),
