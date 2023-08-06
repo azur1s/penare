@@ -55,7 +55,7 @@ macro_rules! get {
                 self.[<$name s>][0].load(Ordering::Relaxed).into()
             }
             pub fn [<get_neg_ $name>](&self) -> $t {
-                self.[<$name s>][0].load(Ordering::Relaxed).into()
+                self.[<$name s>][1].load(Ordering::Relaxed).into()
             }
         }
     };
