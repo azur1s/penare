@@ -1,5 +1,5 @@
 use crate::{
-    fxs::{waveshaper, rectifier, crusher, filter},
+    fxs::{waveshaper, filter},
     editor,
 };
 use std::sync::Arc;
@@ -87,46 +87,6 @@ pub struct PenareParams {
     /// Flip the waveshaped signal
     #[id = "flip"]
     pub flip: BoolParam,
-
-    // ──────────────────────────────
-    // Rectify
-    // ──────────────────────────────
-
-    /// Rectify the signal
-    #[id = "rectify"]
-    pub rectify: BoolParam,
-    /// Rectify mix
-    #[id = "rectify-mix"]
-    pub rectify_mix: FloatParam,
-    /// Mix in rectified signal
-    #[id = "rectify-mix-in"]
-    pub rectify_mix_in: FloatParam,
-    /// Rectify type
-    #[id = "rectify-type"]
-    pub rectify_type: EnumParam<rectifier::RectifyType>,
-    /// Filp rectified signal
-    #[id = "rectify-flip"]
-    pub rectify_flip: BoolParam,
-
-    // ──────────────────────────────
-    // Crusher
-    // ──────────────────────────────
-
-    /// Crush the signal
-    #[id = "crush"]
-    pub crush: BoolParam,
-    /// Crusher mix
-    #[id = "crush-mix"]
-    pub crush_mix: FloatParam,
-    /// Crusher mix in
-    #[id = "crush-mix-in"]
-    pub crush_mix_in: FloatParam,
-    /// Crush type
-    #[id = "crush-type"]
-    pub crush_type: EnumParam<crusher::CrushType>,
-    /// Crush step size
-    #[id = "crush-step"]
-    pub crush_step: FloatParam,
 
     // ──────────────────────────────
     // Filter
@@ -243,24 +203,6 @@ impl Default for PenareParams {
             neg_function_mix:   percentage!("Negative Function Mix", 1.0),
             copy_function:      EnumParam::new("Copy Function", OAB::Off),
             flip:               BoolParam::new("Flip", false),
-
-            rectify:        BoolParam::new("Rectify", false),
-            rectify_mix:    percentage!("Rectify Mix", 0.0),
-            rectify_mix_in: percentage!("Rectify Mix In", 1.0),
-            rectify_type:   EnumParam::new("Rectify Type", rectifier::RectifyType::HalfWave),
-            rectify_flip:   BoolParam::new("Rectify Flip", false),
-
-            crush:        BoolParam::new("Crush", false),
-            crush_mix:    percentage!("Crusher Mix", 1.0),
-            crush_mix_in: percentage!("Crusher Mix In", 0.0),
-            crush_type:   EnumParam::new("Crusher Type", crusher::CrushType::Floor),
-            crush_step:   FloatParam::new(
-                "Crusher Step",
-                3.0,
-                FloatRange::Linear { min: 0.0, max: 20.0 },
-            )
-            .with_smoother(SmoothingStyle::Linear(50.0))
-            .with_value_to_string(formatters::v2s_f32_rounded(2)),
 
             excess_mix:    percentage!("Excess Mix", 0.0),
             f1_type:       EnumParam::new("Filter 1 Type", filter::FilterType::Lowpass),

@@ -163,15 +163,6 @@ impl Plugin for Penare {
                 *sample *= self.params.input_gain.smoothed.next();
 
                 // --- Distortions ---
-                // - Rectify
-                if self.params.rectify.value() {
-                    let mut rs = self.params.rectify_type.value().apply(*sample); // Rectified signal
-                    if self.params.rectify_flip.value() {
-                        rs = -rs;
-                    }
-                    *sample = mix_between(*sample, rs, self.params.rectify_mix.smoothed.next());
-                    *sample = mix_in(*sample, rs, self.params.rectify_mix_in.smoothed.next());
-                }
 
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
@@ -220,15 +211,6 @@ impl Plugin for Penare {
                 // Flip the phase of the signal
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
-
-                // - Crusher
-                if self.params.crush.value() {
-                    // Crushed signal
-                    let step = self.params.crush_step.smoothed.next();
-                    let cs = self.params.crush_type.value().apply(*sample, step);
-                    *sample = mix_between(*sample, cs, self.params.crush_mix.smoothed.next());
-                    *sample = mix_in(*sample, cs, self.params.crush_mix_in.smoothed.next());
-                }
 
                 // --- Post-Gain ---
                 *sample *= self.params.output_gain.smoothed.next(); // Post-gain

@@ -24,6 +24,10 @@ pub enum FunctionType {
     Sinusoidal,
     // sign(x) * {|x| > t : -|x| + 2t, |x|}
     Singlefold,
+    // Bitcrushers
+    Floor,
+    Round,
+    Bitcrush,
 }
 
 impl FunctionType {
@@ -53,6 +57,12 @@ impl FunctionType {
             Singlefold => sig * match xa {
                 x if x > a => -xa + 2.0 * (a.abs()),
                 _          => xa,
+            },
+            Floor => x.signum() * ((x * x.signum() * a.abs()).floor() / a).abs(),
+            Round => x.signum() * ((x * x.signum() * a.abs()).round() / a).abs(),
+            Bitcrush => {
+                let b = 2f32.powf(-a);
+                b * (x / b).round()
             },
         }
     }
@@ -90,6 +100,9 @@ impl std::fmt::Display for FunctionType {
             FunctionType::TanhTwoAtanh   => write!(f, "Tanh2Atanh"),
             FunctionType::Sinusoidal     => write!(f, "Sinusoidal"),
             FunctionType::Singlefold     => write!(f, "Singlefold"),
+            FunctionType::Floor          => write!(f, "Floor"),
+            FunctionType::Round          => write!(f, "Round"),
+            FunctionType::Bitcrush       => write!(f, "Bitcrush"),
         }
     }
 }

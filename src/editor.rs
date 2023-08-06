@@ -112,20 +112,6 @@ pub(crate) fn create(
                     slider!(cx, "Copy From", copy_function);
                     button!(cx, "Flip Phase", flip);
 
-                    header!(cx, "Rectifier");
-                    button!(cx, "Rectify", rectify);
-                    slider!(cx, "Rectify Mix", rectify_mix);
-                    slider!(cx, "Rectified Signal Mix In", rectify_mix_in);
-                    slider!(cx, "Rectify Type", rectify_type);
-                    button!(cx, "Flip Rectified Signal", rectify_flip);
-
-                    header!(cx, "Crusher");
-                    button!(cx, "Crush", crush);
-                    slider!(cx, "Crush Mix", crush_mix);
-                    slider!(cx, "Crush Mix In", crush_mix_in);
-                    slider!(cx, "Crush Type", crush_type);
-                    slider!(cx, "Crush Step", crush_step);
-
                     header!(cx, "Filter");
                     slider!(cx, "Excess Mix", excess_mix);
                     slider!(cx, "Filter 1 Type", f1_type);
