@@ -5,7 +5,6 @@ use nih_plug_vizia::{
     vizia::prelude::*,
     widgets::*,
     ViziaState,
-    assets,
     create_vizia_editor,
 };
 
@@ -23,7 +22,8 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
     ViziaState::new(|| (400, 700))
 }
 
-const FONT: &[u8] = include_bytes!("../assets/OverusedGrotesk-VF.ttf");
+const FONT_REGULAR: &[u8] = include_bytes!("../assets/CommitMono-Regular.otf");
+const FONT_BOLD: &[u8] = include_bytes!("../assets/CommitMono-Bold.otf");
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
@@ -31,7 +31,11 @@ pub(crate) fn create(
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
-        cx.add_fonts_mem(&[FONT]);
+        cx.add_fonts_mem(&[
+            FONT_REGULAR,
+            FONT_BOLD,
+        ]);
+        cx.set_default_font(&["CommitMono"]);
 
         cx.add_theme(include_str!("editor/theme.css"));
 
@@ -83,8 +87,7 @@ pub(crate) fn create(
                     macro_rules! header {
                         ($cx:ident, $label:expr) => {
                             HStack::new($cx, |cx| {
-                                Label::new(cx, $label)
-                                .font_size(24.0);
+                                Label::new(cx, &format!("λ {}", $label));
                             })
                             .class("header")
                             .child_space(Stretch(1.0));
@@ -139,13 +142,12 @@ pub(crate) fn create(
             .width(Percentage(100.0));
 
             HStack::new(cx, |cx| {
-                let small = 12.0;
-                Label::new(cx, crate::Penare::VENDOR)
-                .font_size(small);
-                Label::new(cx, crate::Penare::NAME)
-                .font_size(24.0);
-                Label::new(cx, crate::Penare::VERSION)
-                .font_size(small);
+                Label::new(cx, &format!(
+                    "{} - {} - v{}",
+                    crate::Penare::VENDOR,
+                    crate::Penare::NAME,
+                    crate::Penare::VERSION,
+                ));
             })
             .class("footer")
             .width(Percentage(100.0))

@@ -14,6 +14,9 @@ Colors are from carbon design system (@carbon/colors)
 
     --red50: #fa4d56;
     --red50Hover: #ee0713;
+
+    --magenta50: #ee5396;
+    --magenta50Hover: #e3176f;
 }
 */
 
@@ -24,7 +27,10 @@ waveshaper-display {
 }
 
 param-button {
-    background-color: #121619;
+    width: 180px;
+    child-left: 1s;
+    child-right: 1s;
+    background-color: #21272a;
     border-color: #878d96;
     color: #f2f4f8;
     transition: background-color 0.1 0;
@@ -34,11 +40,11 @@ param-button:hover {
     transition: background-color 0.1 0;
 }
 param-button:checked {
-    background-color: #fa4d56;
+    background-color: #ee5396;
     transition: background-color 0.1 0;
 }
 param-button:checked:hover {
-    background-color: #ee0713;
+    background-color: #e3176f;
     transition: background-color 0.1 0;
 }
 
@@ -84,6 +90,7 @@ param-slider .fill--modulation {
 }
 
 .footer {
+    font-style: bold;
     background-color: #21272a;
-    color: #f2f4f8;
+    color: #fa4d56;
 }
