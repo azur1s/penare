@@ -1,28 +1,24 @@
-use std::sync::{Arc, atomic::{Ordering, AtomicUsize}};
+use std::sync::{Arc, Mutex};
 use nih_plug::prelude::*;
 
 mod params;
+mod data;
 mod editor;
 mod fxs;
 
 use params::PenareParams;
+use data::WaveshapersData;
 use fxs::{
     filter,
     waveshaper,
     utils::{mix_between, mix_in, hard_clip},
 };
 
-// This is a shortened version of the gain example with most comments removed, check out
-// https://github.com/robbert-vdh/nih-plug/blob/master/plugins/examples/gain/src/lib.rs to get
-// started
 struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
-    // Waveshapers (for the UI)
-    pos_fn: Arc<AtomicUsize>,
-    pos_fp: Arc<AtomicF32>,
-    neg_fn: Arc<AtomicUsize>,
-    neg_fp: Arc<AtomicF32>,
+    // Waveshapers Data (for the UI)
+    waveshapers_data: Arc<Mutex<WaveshapersData>>,
     // Filters
     f1: [filter::Biquad; 2],
     f2: [filter::Biquad; 2],
@@ -33,10 +29,7 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
-            pos_fn: Arc::new(AtomicUsize::new(waveshaper::FunctionType::HardClip as usize)),
-            pos_fp: Arc::new(AtomicF32::new(util::db_to_gain(0.0))),
-            neg_fn: Arc::new(AtomicUsize::new(waveshaper::FunctionType::HardClip as usize)),
-            neg_fp: Arc::new(AtomicF32::new(util::db_to_gain(0.0))),
+            waveshapers_data: Arc::new(Mutex::new(WaveshapersData::default())),
             f1: [filter::Biquad::default(); 2],
             f2: [filter::Biquad::default(); 2],
         }
@@ -90,10 +83,7 @@ impl Plugin for Penare {
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         editor::create(
             self.params.clone(),
-            self.pos_fn.clone(),
-            self.pos_fp.clone(),
-            self.neg_fn.clone(),
-            self.neg_fp.clone(),
+            self.waveshapers_data.clone(),
             self.params.editor_state.clone(),
         )
     }
@@ -105,6 +95,8 @@ impl Plugin for Penare {
         _context: &mut impl InitContext<Self>,
     ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
+
+        self.update_waveshapers_data();
 
         for filter in &mut self.f1 {
             filter.sample_rate = self.sample_rate;
@@ -275,24 +267,7 @@ impl Plugin for Penare {
 
             // Only calculate the UI-related data if the editor is open.
             if self.params.editor_state.is_open() {
-                if self.pos_fn.load(Ordering::Relaxed) != self.params.pos_function_type.value().id() {
-                    self.pos_fn.store(self.params.pos_function_type.value().id(), Ordering::Relaxed);
-                }
-                if self.neg_fn.load(Ordering::Relaxed) != self.params.neg_function_type.value().id() {
-                    self.neg_fn.store(self.params.neg_function_type.value().id(), Ordering::Relaxed);
-                }
-                if self.params.pos_function_param.smoothed.is_smoothing() {
-                    self.pos_fp.store(
-                        self.params.pos_function_param.smoothed.next(),
-                        Ordering::Relaxed,
-                    );
-                }
-                if self.params.neg_function_param.smoothed.is_smoothing() {
-                    self.neg_fp.store(
-                        self.params.neg_function_param.smoothed.next(),
-                        Ordering::Relaxed,
-                    );
-                }
+                self.update_waveshapers_data();
             }
         }
 
@@ -301,6 +276,30 @@ impl Plugin for Penare {
 }
 
 impl Penare {
+    fn update_waveshapers_data(&mut self) {
+        let waveshapers_data = self.waveshapers_data.lock().unwrap();
+        if waveshapers_data.get_pos_function_type().unwrap()
+        != self.params.pos_function_type.value() {
+            waveshapers_data.set_pos_function_type(self.params.pos_function_type.value());
+        }
+        if waveshapers_data.get_pos_function_param()
+        != self.params.pos_function_param.smoothed.next() {
+            waveshapers_data.set_pos_function_param(
+                self.params.pos_function_param.smoothed.next(),
+            );
+        }
+        if waveshapers_data.get_neg_function_type().unwrap()
+        != self.params.neg_function_type.value() {
+            waveshapers_data.set_neg_function_type(self.params.neg_function_type.value());
+        }
+        if waveshapers_data.get_neg_function_param()
+        != self.params.neg_function_param.smoothed.next() {
+            waveshapers_data.set_neg_function_param(
+                self.params.neg_function_param.smoothed.next(),
+            );
+        }
+    }
+
     fn update_fs(&mut self) {
         if self.params.f1_freq.smoothed.is_smoothing()
         || self.params.f1_q.smoothed.is_smoothing()

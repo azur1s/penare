@@ -1,37 +1,24 @@
+use crate::{fxs::waveshaper::FunctionType, data::WaveshapersData};
 use std::{
     f32::consts::PI,
-    sync::{Arc, atomic::{AtomicUsize, Ordering}},
+    sync::{Arc, Mutex},
 };
-use atomic_float::AtomicF32;
 use nih_plug_vizia::vizia::{prelude::*, vg};
 
-use crate::fxs::waveshaper::FunctionType;
 
 pub struct WaveshaperDisplay {
-    pos_function_type: Arc<AtomicUsize>,
-    pos_function_param: Arc<AtomicF32>,
-    neg_function_type: Arc<AtomicUsize>,
-    neg_function_param: Arc<AtomicF32>,
+    waveshaper_data: Arc<Mutex<WaveshapersData>>,
 }
 
 impl WaveshaperDisplay {
-    pub fn new<LPT, LPP, LNT, LNP>(
+    pub fn new<LWaveshapersData>(
         cx: &mut Context,
-        pos_function_type: LPT,
-        pos_function_param: LPP,
-        neg_function_type: LNT,
-        neg_function_param: LNP,
+        waveshaper_data: LWaveshapersData,
     ) -> Handle<Self> where 
-        LPT: Lens<Target = Arc<AtomicUsize>>,
-        LPP: Lens<Target = Arc<AtomicF32>>,
-        LNT: Lens<Target = Arc<AtomicUsize>>,
-        LNP: Lens<Target = Arc<AtomicF32>>,
+        LWaveshapersData: Lens<Target = Arc<Mutex<WaveshapersData>>>,
     {
         Self {
-            pos_function_type: pos_function_type.get(cx),
-            pos_function_param: pos_function_param.get(cx),
-            neg_function_type: neg_function_type.get(cx),
-            neg_function_param: neg_function_param.get(cx),
+            waveshaper_data: waveshaper_data.get(cx),
         }.build(cx, |_cx| ())
     }
 }
@@ -47,10 +34,11 @@ impl View for WaveshaperDisplay {
             return;
         }
 
-        let pos_function_type = self.pos_function_type.load(Ordering::Relaxed);
-        let pos_function_param = self.pos_function_param.load(Ordering::Relaxed);
-        let neg_function_type = self.neg_function_type.load(Ordering::Relaxed);
-        let neg_function_param = self.neg_function_param.load(Ordering::Relaxed);
+        let data = self.waveshaper_data.lock().unwrap();
+        let pos_function_type = data.get_pos_function_type().unwrap_or(FunctionType::HardClip);
+        let neg_function_type = data.get_neg_function_type().unwrap_or(FunctionType::HardClip);
+        let pos_function_param = data.get_pos_function_param();
+        let neg_function_param = data.get_neg_function_param();
 
         let line_width = cx.style.dpi_factor as f32 * 1.5;
         // 1 <= scale <= 2;
@@ -97,9 +85,9 @@ impl View for WaveshaperDisplay {
             let y = sin(x);
             // Apply function
             let y = if -y >= 0.0 {
-                FunctionType::from_id(pos_function_type).unwrap().apply(y, pos_function_param)
+                pos_function_type.apply(y, pos_function_param)
             } else {
-                FunctionType::from_id(neg_function_type).unwrap().apply(y, neg_function_param)
+                neg_function_type.apply(y, neg_function_param)
             };
             // Scale to view
             let y = y * a * scale.recip()

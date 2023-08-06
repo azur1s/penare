@@ -1,5 +1,5 @@
-use crate::PenareParams;
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use crate::{PenareParams, data::WaveshapersData};
+use std::sync::{Arc, Mutex};
 use nih_plug::prelude::*;
 use nih_plug_vizia::{
     vizia::prelude::*,
@@ -14,10 +14,7 @@ mod waveshaper_display;
 #[derive(Lens)]
 struct Data {
     params: Arc<PenareParams>,
-    pos_function_type: Arc<AtomicUsize>,
-    pos_function_param: Arc<AtomicF32>,
-    neg_function_type: Arc<AtomicUsize>,
-    neg_function_param: Arc<AtomicF32>,
+    waveshaper_data: Arc<Mutex<WaveshapersData>>,
 }
 
 impl Model for Data {}
@@ -28,10 +25,7 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
-    pos_function_type: Arc<AtomicUsize>,
-    pos_function_param: Arc<AtomicF32>,
-    neg_function_type: Arc<AtomicUsize>,
-    neg_function_param: Arc<AtomicF32>,
+    waveshaper_data: Arc<Mutex<WaveshapersData>>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
@@ -40,10 +34,7 @@ pub(crate) fn create(
 
         Data {
             params: params.clone(),
-            pos_function_type: pos_function_type.clone(),
-            pos_function_param: pos_function_param.clone(),
-            neg_function_type: neg_function_type.clone(),
-            neg_function_param: neg_function_param.clone(),
+            waveshaper_data: waveshaper_data.clone(),
         }.build(cx);
 
         PopupData::default().build(cx);
@@ -54,10 +45,7 @@ pub(crate) fn create(
             // TODO: Implement waveform display
             waveshaper_display::WaveshaperDisplay::new(
                 cx,
-                Data::pos_function_type,
-                Data::pos_function_param,
-                Data::neg_function_type,
-                Data::neg_function_param,
+                Data::waveshaper_data,
             )
             .width(Percentage(100.0))
             .height(Pixels(200.0))
