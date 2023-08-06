@@ -166,48 +166,27 @@ impl Plugin for Penare {
 
                 // - Waveshaper
                 let should_copy = self.params.copy_function.value();
-                // Wave shaped signal
-                let wss = if !should_copy.is_off() {
+                let (ft, fp, fm) = if
                     // If "Copy Function" is on then the function type is used
                     // for the both positive and negative shape
-                    let (ft, fp) = if should_copy.is_positive() {
-                        (self.params.pos_function_type.value(),
-                        self.params.pos_function_param.smoothed.next())
-                    } else {
-                        (self.params.neg_function_type.value(),
-                        self.params.neg_function_param.smoothed.next())
-                    };
-                    // Mix between the original signal and the waveshaped signal
-                    mix_between(
-                        *sample,
-                        ft.apply(*sample, fp),
-                        if *sample >= 0.0 {
-                            self.params.pos_function_mix.smoothed.next()
-                        } else {
-                            self.params.neg_function_mix.smoothed.next()
-                        },
-                    )
-                } else {
+                    (!should_copy.is_off() && should_copy.is_positive())
                     // Otherwise, use the function type for the shape of the signal
-                    let fp = if *sample >= 0.0 {
-                        self.params.pos_function_param.smoothed.next()
-                    } else {
-                        self.params.neg_function_param.smoothed.next()
-                    };
-                    mix_between(
-                        *sample,
-                        if *sample >= 0.0 {
-                            self.params.pos_function_type.value()
-                        } else {
-                            self.params.neg_function_type.value()
-                        }.apply(*sample, fp),
-                        if *sample >= 0.0 {
-                            self.params.pos_function_mix.smoothed.next()
-                        } else {
-                            self.params.neg_function_mix.smoothed.next()
-                        },
-                    )
+                    || -(*sample) >= 0.0
+                {
+                    (self.params.pos_function_type.value(),
+                    self.params.pos_function_param.smoothed.next(),
+                    self.params.pos_function_mix.smoothed.next())
+                } else {
+                    (self.params.neg_function_type.value(),
+                    self.params.neg_function_param.smoothed.next(),
+                    self.params.neg_function_mix.smoothed.next())
                 };
+                // Wave shaped signal
+                let wss = mix_between(
+                    *sample,
+                    ft.apply(*sample, fp),
+                    fm,
+                );
                 // Flip the phase of the signal
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
@@ -257,10 +236,18 @@ impl Penare {
         let waveshapers_data = self.waveshapers_data.lock().unwrap();
         waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
         waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
-        waveshapers_data.set_pos_function_type(self.params.pos_function_type.value());
-        waveshapers_data.set_pos_function_param(self.params.pos_function_param.smoothed.next());
-        waveshapers_data.set_neg_function_type(self.params.neg_function_type.value());
-        waveshapers_data.set_neg_function_param(self.params.neg_function_param.smoothed.next());
+        waveshapers_data.set_function_types(
+            self.params.pos_function_type.value(),
+            self.params.neg_function_type.value()
+        );
+        waveshapers_data.set_function_params(
+            self.params.pos_function_param.smoothed.next(),
+            self.params.neg_function_param.smoothed.next()
+        );
+        waveshapers_data.set_function_mixs(
+            self.params.pos_function_mix.smoothed.next(),
+            self.params.neg_function_mix.smoothed.next()
+        );
         waveshapers_data.set_clip(self.params.output_clip.value());
         waveshapers_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
         waveshapers_data.set_copy(self.params.copy_function.value());

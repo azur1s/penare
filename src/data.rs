@@ -17,6 +17,8 @@ pub struct WaveshapersData {
     /// Parameters for the function. The first element is the positive function parameter,
     /// and the second element is the negative function parameter.
     pub function_params: [AtomicF32; 2],
+    /// Function mixs in percentage.
+    pub function_mixs: [AtomicF32; 2],
     /// Clip output
     pub clip: AtomicBool,
     /// Clip threshold
@@ -36,6 +38,7 @@ impl Default for WaveshapersData {
             output_gain: AtomicF32::new(db),
             function_types: [AtomicUsize::new(f), AtomicUsize::new(f)],
             function_params: [AtomicF32::new(db), AtomicF32::new(db)],
+            function_mixs: [AtomicF32::new(0.0), AtomicF32::new(0.0)],
             clip: AtomicBool::new(true),
             clip_threshold: AtomicF32::new(db),
             copy: AtomicUsize::new(OAB::Off.into()),
@@ -47,7 +50,7 @@ impl Default for WaveshapersData {
 // Macro for defining getters function
 macro_rules! get {
     // Normal value getters
-    ($name:ident -> $t:ty) => {
+    ($name:ident $t:ty) => {
         paste! {
             pub fn [<get_ $name>](&self) -> $t {
                 self.$name.load(Ordering::Relaxed).into()
@@ -55,7 +58,7 @@ macro_rules! get {
         }
     };
     // "Polar" value getters
-    ($name:ident polar -> $t:ty) => {
+    ($name:ident polar $t:ty) => {
         paste! {
             pub fn [<get_pos_ $name>](&self) -> $t {
                 self.[<$name s>][0].load(Ordering::Relaxed).into()
@@ -67,41 +70,42 @@ macro_rules! get {
     };
 }
 macro_rules! set {
-    ($name:ident <- $t:ty) => {
+    ($name:ident $t:ty) => {
         paste! {
             pub fn [<set_ $name>](&self, $name: $t) {
                 self.$name.store($name.into(), Ordering::Relaxed);
             }
         }
     };
-    ($name:ident polar <- $t:ty) => {
+    ($name:ident polar $t:ty) => {
         paste! {
-            pub fn [<set_pos_ $name>](&self, $name: $t) {
-                self.[<$name s>][0].store($name.into(), Ordering::Relaxed);
-            }
-            pub fn [<set_neg_ $name>](&self, $name: $t) {
-                self.[<$name s>][1].store($name.into(), Ordering::Relaxed);
+            pub fn [<set_ $name s>](&self, pos: $t, neg: $t) {
+                self.[<$name s>][0].store(pos.into(), Ordering::Relaxed);
+                self.[<$name s>][1].store(neg.into(), Ordering::Relaxed);
             }
         }
     };
 }
 
+#[allow(dead_code)]
 impl WaveshapersData {
-    get!(input_gain           -> f32);
-    get!(output_gain          -> f32);
-    get!(function_type  polar -> FunctionType);
-    get!(function_param polar -> f32);
-    get!(clip                 -> bool);
-    get!(clip_threshold       -> f32);
-    get!(copy                 -> OAB);
-    get!(flip                 -> bool);
+    get!(input_gain           f32);
+    get!(output_gain          f32);
+    get!(function_type  polar FunctionType);
+    get!(function_param polar f32);
+    get!(function_mix   polar f32);
+    get!(clip                 bool);
+    get!(clip_threshold       f32);
+    get!(copy                 OAB);
+    get!(flip                 bool);
 
-    set!(input_gain           <- f32);
-    set!(output_gain          <- f32);
-    set!(function_type  polar <- FunctionType);
-    set!(function_param polar <- f32);
-    set!(clip                 <- bool);
-    set!(clip_threshold       <- f32);
-    set!(copy                 <- OAB);
-    set!(flip                 <- bool);
+    set!(input_gain           f32);
+    set!(output_gain          f32);
+    set!(function_type  polar FunctionType);
+    set!(function_param polar f32);
+    set!(function_mix   polar f32);
+    set!(clip                 bool);
+    set!(clip_threshold       f32);
+    set!(copy                 OAB);
+    set!(flip                 bool);
 }

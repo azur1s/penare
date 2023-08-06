@@ -1,4 +1,4 @@
-use crate::{fxs::utils::hard_clip, data::WaveshapersData};
+use crate::{fxs::utils::{hard_clip, mix_between}, data::WaveshapersData};
 use std::{
     f32::consts::PI,
     sync::{Arc, Mutex},
@@ -35,14 +35,12 @@ impl View for WaveshaperDisplay {
         }
 
         let data = self.waveshaper_data.lock().unwrap();
-        let input_gain = data.get_input_gain();
-        let output_gain = data.get_output_gain();
         let pos_function_type = data.get_pos_function_type();
         let neg_function_type = data.get_neg_function_type();
         let pos_function_param = data.get_pos_function_param();
         let neg_function_param = data.get_neg_function_param();
-        let clip = data.get_clip();
-        let clip_threshold = data.get_clip_threshold();
+        let pos_function_mix = data.get_pos_function_mix();
+        let neg_function_mix = data.get_neg_function_mix();
 
         let line_width = cx.style.dpi_factor as f32 * 1.5;
         // 1 <= scale <= 2;
@@ -93,30 +91,22 @@ impl View for WaveshaperDisplay {
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             // Sin function
-            let y = sin(x) * input_gain;
+            let y = sin(x) * data.get_input_gain();
             // Apply function
-            let y = if !data.get_copy().is_off() {
-                let (ft, fp) = if data.get_copy().is_positive() {
-                    (pos_function_type, pos_function_param)
-                } else {
-                    (neg_function_type, neg_function_param)
-                };
-                ft.apply(y, fp)
+            let (ft, fp, fm) = if (!data.get_copy().is_off() && data.get_copy().is_positive()) || -y >= 0.0 {
+                (pos_function_type, pos_function_param, pos_function_mix)
             } else {
-                if -y >= 0.0 {
-                    pos_function_type.apply(y, pos_function_param)
-                } else {
-                    neg_function_type.apply(y, neg_function_param)
-                }
+                (neg_function_type, neg_function_param, neg_function_mix)
             };
+            let y = mix_between(y, ft.apply(y, fp), fm);
             // Flip
             let y = if data.get_flip() { -y } else { y };
             // Clip output
-            let y = if clip {
-                hard_clip(y, clip_threshold)
+            let y = if data.get_clip() {
+                hard_clip(y, data.get_clip_threshold())
             } else {
                 y
-            } * output_gain;
+            } * data.get_output_gain();
             // Scale to view
             let y = y * a * scale.recip() + a;
             // Draw
