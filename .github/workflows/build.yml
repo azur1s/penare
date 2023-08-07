@@ -102,6 +102,10 @@ jobs:
           mkdir -p "$ARCHIVE_NAME"
           mv target/bundled/* "$ARCHIVE_NAME"
 
+      - name: Add LICENSE file
+        run: |
+          cp LICENSE "$ARCHIVE_NAME" 
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ARCHIVE_NAME }}
