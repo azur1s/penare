@@ -9,33 +9,34 @@ use nih_plug_vizia::ViziaState;
 const MAX_FREQ: f32 = 22000.0;
 const MIN_FREQ: f32 = 3.0;
 
+/// A tri-state enum type
 #[derive(Enum, PartialEq)]
-pub enum OAB { Off, Pos, Neg }
+pub enum TriState { Off, Pos, Neg }
 
-impl OAB {
-    pub fn is_off(&self)      -> bool { matches!(self, OAB::Off) }
+impl TriState {
+    pub fn is_off(&self)      -> bool { matches!(self, TriState::Off) }
     pub fn is_on(&self)       -> bool { !self.is_off() }
-    pub fn is_positive(&self) -> bool { matches!(self, OAB::Pos) }
+    pub fn is_positive(&self) -> bool { matches!(self, TriState::Pos) }
 }
 
-impl From<usize> for OAB {
+impl From<usize> for TriState {
     fn from(id: usize) -> Self {
         Self::from_index(id)
     }
 }
 
-impl From<OAB> for usize {
-    fn from(oab: OAB) -> Self {
-        oab as usize
+impl From<TriState> for usize {
+    fn from(tri: TriState) -> Self {
+        tri as usize
     }
 }
 
-impl std::fmt::Display for OAB {
+impl std::fmt::Display for TriState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OAB::Off => write!(f, "Off"),
-            OAB::Pos => write!(f, "Positive"),
-            OAB::Neg => write!(f, "Negative"),
+            TriState::Off => write!(f, "Off"),
+            TriState::Pos => write!(f, "Positive"),
+            TriState::Neg => write!(f, "Negative"),
         }
     }
 }
@@ -96,7 +97,7 @@ pub struct PenareParams {
     pub neg_function_mix: FloatParam,
     /// Use function for the positive/negative shape too
     #[id = "copy-function"]
-    pub copy_function: EnumParam<OAB>,
+    pub copy_function: EnumParam<TriState>,
     /// Flip the waveshaped signal
     #[id = "flip"]
     pub flip: BoolParam,
@@ -214,7 +215,7 @@ impl Default for PenareParams {
             neg_function_type:  EnumParam::new("Negative Function Type", waveshaper::FunctionType::HardClip),
             neg_function_param: db!("Negative Function Parameter", 30.0),
             neg_function_mix:   percentage!("Negative Function Mix", 1.0),
-            copy_function:      EnumParam::new("Copy Function", OAB::Off),
+            copy_function:      EnumParam::new("Copy Function", TriState::Off),
             flip:               BoolParam::new("Flip", false),
 
             excess_mix:    percentage!("Excess Mix", 0.0),

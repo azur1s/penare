@@ -5,12 +5,13 @@ use std::{
 };
 use nih_plug_vizia::vizia::{prelude::*, vg};
 
-
 pub struct WaveshaperDisplay {
+    /// Reference to the waveshapers data
     waveshaper_data: Arc<Mutex<WaveshapersData>>,
 }
 
 impl WaveshaperDisplay {
+    /// Create a new waveshaper display
     pub fn new<LWaveshapersData>(
         cx: &mut Context,
         waveshaper_data: LWaveshapersData,
@@ -34,14 +35,16 @@ impl View for WaveshaperDisplay {
             return;
         }
 
+        // Get waveshaper data
         let data = self.waveshaper_data.lock().unwrap();
-        let pos_function_type = data.get_pos_function_type();
-        let neg_function_type = data.get_neg_function_type();
+        let pos_function_type  = data.get_pos_function_type();
+        let neg_function_type  = data.get_neg_function_type();
         let pos_function_param = data.get_pos_function_param();
         let neg_function_param = data.get_neg_function_param();
-        let pos_function_mix = data.get_pos_function_mix();
-        let neg_function_mix = data.get_neg_function_mix();
+        let pos_function_mix   = data.get_pos_function_mix();
+        let neg_function_mix   = data.get_neg_function_mix();
 
+        // Calculate commonly used variables
         let line_width = cx.style.dpi_factor as f32 * 1.5;
         // 1 <= scale <= 2;
         let scale = 1.5f32;
@@ -57,20 +60,23 @@ impl View for WaveshaperDisplay {
         let mut path = vg::Path::new();
         let paint = vg::Paint::color(cx.border_color().cloned().unwrap_or_default().into())
             .with_line_width(line_width);
+        // X axis
         path.move_to(0.0, bounds.h * 0.5);
         path.line_to(bounds.w, bounds.h * 0.5);
+        // Y axis
         path.move_to(bounds.w * 0.5, 0.0);
         path.line_to(bounds.w * 0.5, bounds.h);
 
-        // Draw [-1, 1] lines
+        // Draw [-1, 1] dB lines
         path.move_to(0.0, -1.0 * a * scale.recip() + a);
         path.line_to(bounds.w, -1.0 * a * scale.recip() + a);
         path.move_to(0.0, 1.0 * a * scale.recip() + a);
         path.line_to(bounds.w, 1.0 * a * scale.recip() + a);
 
+        // Sin function scaled to width to show only one period
         let sin = |x: f32| (-x * PI / (0.5 * bounds.w)).sin();
 
-        // Draw sin function
+        // Draw normal sin function
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             let y = sin(x);
@@ -88,6 +94,7 @@ impl View for WaveshaperDisplay {
         let paint = vg::Paint::color(cx.font_color().cloned().unwrap_or_default().into())
             .with_line_width(line_width);
 
+        // Draw waveshaped sin function
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             // Sin function
@@ -112,7 +119,7 @@ impl View for WaveshaperDisplay {
             } else {
                 y
             } * data.get_output_gain();
-            // Scale to view
+            // Scale Y axis to view
             let y = y * a * scale.recip() + a;
             // Draw
             if x == 0.0 {

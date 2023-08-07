@@ -22,6 +22,7 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
     ViziaState::new(|| (800, 700))
 }
 
+// Fonts
 const FONT_REGULAR: &[u8] = include_bytes!("../assets/CommitMono-Regular.otf");
 const FONT_BOLD: &[u8] = include_bytes!("../assets/CommitMono-Bold.otf");
 
@@ -31,6 +32,7 @@ pub(crate) fn create(
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
+        // Add and set default fonts
         cx.add_fonts_mem(&[
             FONT_REGULAR,
             FONT_BOLD,
@@ -44,12 +46,9 @@ pub(crate) fn create(
             waveshaper_data: waveshaper_data.clone(),
         }.build(cx);
 
-        PopupData::default().build(cx);
-
         ResizeHandle::new(cx);
 
         VStack::new(cx, |cx| {
-            // TODO: Implement waveform display
             waveshaper_display::WaveshaperDisplay::new(
                 cx,
                 Data::waveshaper_data,
@@ -57,6 +56,7 @@ pub(crate) fn create(
             .width(Percentage(100.0))
             .height(Pixels(200.0));
 
+            // Macro for commonly used components
             macro_rules! hstack {
                 ($cx:ident, $f:expr) => {
                     HStack::new($cx, $f)
@@ -93,6 +93,7 @@ pub(crate) fn create(
             }
 
             HStack::new(cx, |cx| {
+                // Input-Output related parameters
                 ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                     VStack::new(cx, |cx| {
                         header!(cx, "Mix");
@@ -116,6 +117,7 @@ pub(crate) fn create(
                 })
                 .class("params");
 
+                // Distortions parameter
                 ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
                     header!(cx, "Waveshaper");
                     slider!(cx, "Function Mix", function_mix);
@@ -132,7 +134,7 @@ pub(crate) fn create(
             })
             .width(Percentage(100.0));
 
-
+            // Footer
             HStack::new(cx, |cx| {
                 Label::new(cx, &format!(
                     "{} - {} - v{}",

@@ -2,6 +2,7 @@ use crate::fxs::utils::hard_clip;
 use std::f32::consts::PI;
 use nih_plug::{prelude::*, util::gain_to_db};
 
+/// Enum to represent the waveshaper function type
 #[derive(Clone, Copy, Enum, PartialEq)]
 pub enum FunctionType {
     // Classic hard clip
@@ -22,13 +23,13 @@ pub enum FunctionType {
     TanhTwoAtanh,
     // (1 - t) * x + t * sin(2pi * x * (1 + 3t))
     Sinusoidal,
+    // What the actual hell?
+    // sign(x) * {|x| > sin(2pi * |x| + (1 + 3t)): sin(|x| * t), |x|}
+    BrokenSin,
     // sign(x) * {|x| > t : -|x| + 2t, |x|}
     Singlefold,
     // sign(x) * (4|x| / T) * |((|x| - T/4) % T) - T/2|
     Sillyfold,
-    // What the actual hell?
-    // sign(x) * {|x| > sin(2pi * |x| + (1+3t)): sin(|x| * t), |x| }
-    BrokenSin,
     // Bitcrushers
     Floor,
     Round,
@@ -36,6 +37,7 @@ pub enum FunctionType {
 }
 
 impl FunctionType {
+    /// Apply the function to a value with a given parameter
     pub fn apply(&self, x: f32, a: f32) -> f32 {
         use FunctionType::*;
         let sig = x.signum();
@@ -59,15 +61,15 @@ impl FunctionType {
                 let w3 = (1.0 - 0.3 * ab) * w2;
                 w3
             },
-            Singlefold => sig * match xa {
-                x if x > a => -xa + 2.0 * (a.abs()),
-                _          => xa,
-            },
-            Sillyfold => sig * 4.0 * xa / a * (((xa - a * 0.25) % a) - a * 0.5).abs(),
             BrokenSin => sig * match xa {
                 x if x > (2.0 * PI * x + (1.0 + 3.0 * a)).sin() => (x * a).sin(),
-                _ => xa
+                x => x,
             },
+            Singlefold => sig * match xa {
+                x if x > a => -xa + 2.0 * (a.abs()),
+                x          => x,
+            },
+            Sillyfold => sig * 4.0 * xa / a * (((xa - a * 0.25) % a) - a * 0.5).abs(),
             Floor => sig * ((x * sig * a.abs()).floor() / a).abs(),
             Round => sig * ((x * sig * a.abs()).round() / a).abs(),
             Bitcrush => {

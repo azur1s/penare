@@ -1,4 +1,4 @@
-use crate::{fxs::waveshaper::FunctionType, params::OAB};
+use crate::{fxs::waveshaper::FunctionType, params::TriState};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
@@ -15,17 +15,17 @@ pub struct WaveshapersData {
     /// and the second element is the negative function type.
     pub function_types: [AtomicUsize; 2],
     /// Parameters for the function. The first element is the positive function parameter,
-    /// and the second element is the negative function parameter.
+    /// and the second element is the negative function parameter
     pub function_params: [AtomicF32; 2],
-    /// Function mixs in percentage.
+    /// Function mixs in percentage
     pub function_mixs: [AtomicF32; 2],
     /// Clip output
     pub clip: AtomicBool,
     /// Clip threshold
     pub clip_threshold: AtomicF32,
-    /// Copy functions.
+    /// Copy functions
     pub copy: AtomicUsize,
-    /// Flip phase.
+    /// Flip phase
     pub flip: AtomicBool,
 }
 
@@ -41,7 +41,7 @@ impl Default for WaveshapersData {
             function_mixs: [AtomicF32::new(0.0), AtomicF32::new(0.0)],
             clip: AtomicBool::new(true),
             clip_threshold: AtomicF32::new(db),
-            copy: AtomicUsize::new(OAB::Off.into()),
+            copy: AtomicUsize::new(TriState::Off.into()),
             flip: AtomicBool::new(false),
         }
     }
@@ -69,6 +69,7 @@ macro_rules! get {
         }
     };
 }
+// Macro for defining setters function
 macro_rules! set {
     ($name:ident $t:ty) => {
         paste! {
@@ -96,7 +97,7 @@ impl WaveshapersData {
     get!(function_mix   polar f32);
     get!(clip                 bool);
     get!(clip_threshold       f32);
-    get!(copy                 OAB);
+    get!(copy                 TriState);
     get!(flip                 bool);
 
     set!(input_gain           f32);
@@ -106,6 +107,6 @@ impl WaveshapersData {
     set!(function_mix   polar f32);
     set!(clip                 bool);
     set!(clip_threshold       f32);
-    set!(copy                 OAB);
+    set!(copy                 TriState);
     set!(flip                 bool);
 }

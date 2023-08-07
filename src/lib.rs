@@ -47,8 +47,6 @@ impl Plugin for Penare {
 
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-    // The first audio IO layout is used as the default. The other layouts may be selected either
-    // explicitly or automatically by the host or the user depending on the plugin API/backend.
     const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[AudioIOLayout {
         main_input_channels: NonZeroU32::new(2),
         main_output_channels: NonZeroU32::new(2),
@@ -56,9 +54,6 @@ impl Plugin for Penare {
         aux_input_ports: &[],
         aux_output_ports: &[],
 
-        // Individual ports and the layout as a whole can be named here. By default these names
-        // are generated as needed. This layout will be called 'Stereo', while a layout with
-        // only one input and output channel would be called 'Mono'.
         names: PortNames::const_default(),
     }];
 
@@ -67,13 +62,7 @@ impl Plugin for Penare {
 
     const SAMPLE_ACCURATE_AUTOMATION: bool = true;
 
-    // If the plugin can send or receive SysEx messages, it can define a type to wrap around those
-    // messages here. The type implements the `SysExMessage` trait, which allows conversion to and
-    // from plain byte buffers.
     type SysExMessage = ();
-    // More advanced plugins can use this to run expensive background tasks. See the field's
-    // documentation for more information. `()` means that the plugin does not have any background
-    // tasks.
     type BackgroundTask = ();
 
     fn params(&self) -> Arc<dyn Params> {
@@ -107,9 +96,6 @@ impl Plugin for Penare {
         self.update_f1();
         self.update_f2();
 
-        // Resize buffers and perform other potentially expensive initialization operations here.
-        // The `reset()` function is always called right after this function. You can remove this
-        // function if you do not need it.
         true
     }
 
@@ -133,10 +119,10 @@ impl Plugin for Penare {
 
             //   Input
             //     ├───────────────┐
-            //     │               │ (Dry Signal)
+            //     │               ├─(Dry Signal)
             //   Filter ───────┐   │
             //     │           │   │
-            //  Pre-Gain       │ (Excess Signal)
+            //  Pre-Gain       ├─(Excess Signal)
             //     │           │   │
             // Distortions     │   │
             //     │           │   │
@@ -235,6 +221,7 @@ impl Plugin for Penare {
 }
 
 impl Penare {
+    /// Update waveshapers data to be sent to the UI
     fn update_waveshapers_data(&mut self) {
         let waveshapers_data = self.waveshapers_data.lock().unwrap();
         waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
@@ -257,6 +244,7 @@ impl Penare {
         waveshapers_data.set_flip(self.params.flip.value());
     }
 
+    /// Update filters (when parameters change)
     fn update_fs(&mut self) {
         if self.params.f1_freq.smoothed.is_smoothing()
         || self.params.f1_q.smoothed.is_smoothing()
@@ -270,14 +258,17 @@ impl Penare {
         }
     }
 
+    /// Process a sample through the first filter, returning the filtered sample and the excess
     fn f1_process(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
         self.f1[channel_index].process(sample)
     }
 
+    /// Process a sample through the second filter, returning the filtered sample and the excess
     fn f2_process(&mut self, channel_index: usize, sample: f32) -> (f32, f32) {
         self.f2[channel_index].process(sample)
     }
 
+    /// Update first filter with current parameters
     fn update_f1(&mut self) {
         let ty = self.params.f1_type.value();
         let freq = self.params.f1_freq.smoothed.next();
@@ -290,6 +281,7 @@ impl Penare {
         }
     }
 
+    /// Update second filter with current parameters
     fn update_f2(&mut self) {
         let ty = self.params.f2_type.value();
         let freq = self.params.f2_freq.smoothed.next();
