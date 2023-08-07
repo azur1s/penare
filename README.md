@@ -20,15 +20,8 @@ For MacOS:
 
 ## Features
 - Pre and Post gain control (no way)
-- Filter control (like which range the distortion is applied) and you can mix it back afterward :O
 - Symmetric and Asymmetric waveshaping!
-- Rectifier
-  - Half and Full rectify
-  - Mix between dry and wet signal
-  - Mix in wet signal (in case you want to layer it)
-- Crusher
-  - Adjustable step (you can use this for quality reduction kind-of deal)
-  - Mix between or in dry and wet signal
+- Filter control (like which range the distortion is applied) and you can mix it back afterward :O
 
 ## Contributing
 Some of the algorithms probably is not correct so you can fix it if you think it's incorrect. Or you can add new one if you're feeling generous :D
