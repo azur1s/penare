@@ -8,6 +8,7 @@ A wonky distortion plugin :3
 For Windows:
 1. Get the lastest release from the [here](https://github.com/azur1s/penare/releases)
 2. Unzip and find the `.vst3` or `.clap` file inside and move it to your VST3/CLAP directory
+3. Re-scan your plugins in your DAW if needed
 
 For MacOS:
 1. Do the same as Windows
@@ -19,7 +20,7 @@ For MacOS:
     Otherwise, if you don't trust me, then don't do it
 
 ## Features
-- Pre and Post gain control (no way)
+- Pre and post gain control (no way)
 - Symmetric and Asymmetric waveshaping!
 - Filter control (like which range the distortion is applied) and you can mix it back afterward :O
 
