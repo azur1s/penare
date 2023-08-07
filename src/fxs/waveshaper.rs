@@ -36,44 +36,48 @@ pub enum FunctionType {
     Bitcrush,
 }
 
+const PI2: f32 = 2.0 * PI;
+
 impl FunctionType {
     /// Apply the function to a value with a given parameter
-    pub fn apply(&self, x: f32, a: f32) -> f32 {
+    pub fn apply(&self, x: f32, t: f32) -> f32 {
         use FunctionType::*;
+        // sign(x)
         let sig = x.signum();
+        // |x|
         let xa = x.abs();
         match self {
-            HardClip       => hard_clip(x, a),
-            ScaledClip     => hard_clip(x * a, a),
-            TwoTanh        => (2.0 * x).tanh() * a,
-            Sqrt           => sig * (xa.sqrt() * a),
-            Reciprocal     => 2.0 * sig * (a - (a / (xa + 1.0))),
-            ReciprocalTanh => 2.0 * sig * ((a - (a / (xa + 1.0))).tanh()),
+            HardClip       => hard_clip(x, t),
+            ScaledClip     => hard_clip(x * t, t),
+            TwoTanh        => (2.0 * x).tanh() * t,
+            Sqrt           => sig * (xa.sqrt() * t),
+            Reciprocal     => 2.0 * sig * (t - (t / (xa + 1.0))),
+            ReciprocalTanh => 2.0 * sig * ((t - (t / (xa + 1.0))).tanh()),
             TanhTwoAtanh => sig * match xa {
-                x if x < a / 2.0 => (2.0 * (2.0 * x / a).atanh()).tanh() * a,
-                _ => a,
+                x if x < t / 2.0 => (2.0 * (2.0 * x / t).atanh()).tanh() * t,
+                _ => t,
             },
             Sinusoidal => {
                 // Normalize
-                let ab = gain_to_db(a.abs()) / 30.0;
-                let w1 = (2.0 * PI * x * (1.0 + 3.0 * ab)).sin();
+                let ab = gain_to_db(t.abs()) / 30.0;
+                let w1 = (PI2 * x * (1.0 + 3.0 * ab)).sin();
                 let w2 = (1.0 - ab) * x + ab * w1;
                 let w3 = (1.0 - 0.3 * ab) * w2;
                 w3
             },
             BrokenSin => sig * match xa {
-                x if x > (2.0 * PI * x + (1.0 + 3.0 * a)).sin() => (x * a).sin(),
+                x if x > (PI2 * x + (1.0 + 3.0 * t)).sin() => (x * t).sin(),
                 x => x,
             },
             Singlefold => sig * match xa {
-                x if x > a => -xa + 2.0 * (a.abs()),
+                x if x > t => -x + 2.0 * (t.abs()),
                 x          => x,
             },
-            Sillyfold => sig * 4.0 * xa / a * (((xa - a * 0.25) % a) - a * 0.5).abs(),
-            Floor => sig * ((x * sig * a.abs()).floor() / a).abs(),
-            Round => sig * ((x * sig * a.abs()).round() / a).abs(),
+            Sillyfold => sig * 4.0 * xa / t * (((xa - t * 0.25) % t) - t * 0.5).abs(),
+            Floor     => sig * ((x * sig * t.abs()).floor() / t).abs(),
+            Round     => sig * ((x * sig * t.abs()).round() / t).abs(),
             Bitcrush => {
-                let b = 2f32.powf(-a);
+                let b = 2f32.powf(-t);
                 b * (x / b).round()
             },
         }
@@ -121,10 +125,10 @@ mod tests {
     #[allow(unused_variables)]
     fn test() {
         let sample = (5..15).map(|x| x as f32 * 0.05).collect::<Vec<_>>();
-        let a = 0.5;
+        let t = 0.5;
 
-        let hard = sample.iter().map(|x| HardClip.apply(*x, a)).collect::<Vec<_>>();
-        let test = sample.iter().map(|x| ScaledClip.apply(*x, a)).collect::<Vec<_>>();
+        let hard = sample.iter().map(|x| HardClip.apply(*x, t)).collect::<Vec<_>>();
+        let test = sample.iter().map(|x| ScaledClip.apply(*x, t)).collect::<Vec<_>>();
 
         fn fmt(v: &[f32]) -> String {
             v.iter().map(|x| format!("{:6.2}", x)).collect::<Vec<_>>().join("")
