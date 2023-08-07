@@ -26,6 +26,9 @@ pub enum FunctionType {
     Singlefold,
     // sign(x) * (4|x| / T) * |((|x| - T/4) % T) - T/2|
     Sillyfold,
+    // What the actual hell?
+    // sign(x) * {|x| > sin(2pi * |x| + (1+3t)): sin(|x| * t), |x| }
+    BrokenSin,
     // Bitcrushers
     Floor,
     Round,
@@ -61,6 +64,10 @@ impl FunctionType {
                 _          => xa,
             },
             Sillyfold => sig * 4.0 * xa / a * (((xa - a * 0.25) % a) - a * 0.5).abs(),
+            BrokenSin => sig * match xa {
+                x if x > (2.0 * PI * x + (1.0 + 3.0 * a)).sin() => (x * a).sin(),
+                _ => xa
+            },
             Floor => sig * ((x * sig * a.abs()).floor() / a).abs(),
             Round => sig * ((x * sig * a.abs()).round() / a).abs(),
             Bitcrush => {
@@ -96,6 +103,7 @@ impl std::fmt::Display for FunctionType {
             FunctionType::Sinusoidal     => write!(f, "Sinusoidal"),
             FunctionType::Singlefold     => write!(f, "Singlefold"),
             FunctionType::Sillyfold      => write!(f, "Sillyfold"),
+            FunctionType::BrokenSin      => write!(f, "BrokenSin"),
             FunctionType::Floor          => write!(f, "Floor"),
             FunctionType::Round          => write!(f, "Round"),
             FunctionType::Bitcrush       => write!(f, "Bitcrush"),
