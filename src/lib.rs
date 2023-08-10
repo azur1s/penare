@@ -224,6 +224,7 @@ impl Penare {
     /// Update waveshapers data to be sent to the UI
     fn update_waveshapers_data(&mut self) {
         let waveshapers_data = self.waveshapers_data.lock().unwrap();
+        waveshapers_data.set_mix(self.params.function_mix.smoothed.next());
         waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
         waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
         waveshapers_data.set_function_types(

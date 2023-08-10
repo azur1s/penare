@@ -97,8 +97,9 @@ impl View for WaveshaperDisplay {
         // Draw waveshaped sin function
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
+            let y_original = sin(x);
             // Sin function
-            let y = sin(x) * data.get_input_gain();
+            let y = y_original * data.get_input_gain();
             // Apply function
             let (ft, fp, fm) = if match (data.get_copy().is_on(), data.get_copy().is_positive(), -y >= 0.0) {
                 (true,  true,  _   ) => true,
@@ -113,7 +114,9 @@ impl View for WaveshaperDisplay {
             let y = mix_between(y, ft.apply(y, fp), fm);
             // Flip
             let y = if data.get_flip() { -y } else { y };
-            // Clip output
+            // Function mix
+            let y = mix_between(y_original, y, data.get_mix());
+            // Final clip
             let y = if data.get_clip() {
                 hard_clip(y, data.get_clip_threshold())
             } else {

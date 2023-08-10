@@ -5,6 +5,8 @@ use nih_plug::prelude::*;
 use paste::paste;
 
 pub struct WaveshapersData {
+    /// Wet mix
+    pub mix: AtomicF32,
     /// Input gain
     pub input_gain: AtomicF32,
     /// Output gain
@@ -34,6 +36,7 @@ impl Default for WaveshapersData {
         let f = FunctionType::HardClip.into();
         let db = util::db_to_gain(0.0);
         Self {
+            mix: AtomicF32::new(1.0),
             input_gain: AtomicF32::new(db),
             output_gain: AtomicF32::new(db),
             function_types: [AtomicUsize::new(f), AtomicUsize::new(f)],
@@ -90,6 +93,7 @@ macro_rules! set {
 
 #[allow(dead_code)]
 impl WaveshapersData {
+    get!(mix                  f32);
     get!(input_gain           f32);
     get!(output_gain          f32);
     get!(function_type  polar FunctionType);
@@ -100,6 +104,7 @@ impl WaveshapersData {
     get!(copy                 TriState);
     get!(flip                 bool);
 
+    set!(mix                  f32);
     set!(input_gain           f32);
     set!(output_gain          f32);
     set!(function_type  polar FunctionType);
