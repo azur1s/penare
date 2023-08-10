@@ -1,13 +1,13 @@
 # Penare
 
-A wonky distortion plugin :3
+A free wonky distortion plugin :3
 
 ![UI](assets/ui_0.2.0.png)
 
 ## Installing
 For Windows:
 1. Get the lastest release from the [here](https://github.com/azur1s/penare/releases)
-2. Unzip and find the `.vst3` or `.clap` file inside and move it to your VST3/CLAP directory
+2. Unzip and find the `.vst3` or `.clap` file inside and move it to your VST3/CLAP directory. Usually it would be `C:\Program Files\Common Files\VST3` for Windows.
 3. Re-scan your plugins in your DAW if needed
 
 For MacOS:
