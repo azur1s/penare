@@ -19,7 +19,7 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (800, 700))
+    ViziaState::new(|| (400, 700))
 }
 
 // Fonts
@@ -54,7 +54,7 @@ pub(crate) fn create(
                 Data::waveshaper_data,
             )
             .width(Percentage(100.0))
-            .height(Pixels(200.0));
+            .height(Pixels(100.0));
 
             // Macro for commonly used components
             macro_rules! hstack {
@@ -88,37 +88,33 @@ pub(crate) fn create(
                         Label::new(cx, &format!("λ {}", $label));
                     })
                     .class("header")
-                    .child_space(Stretch(1.0));
+                    .child_space(Stretch(1.0))
+                    .top(Pixels(10.0))
+                    .bottom(Pixels(10.0));
                 };
             }
 
             HStack::new(cx, |cx| {
                 // Input-Output related parameters
                 ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
-                    VStack::new(cx, |cx| {
-                        header!(cx, "Mix");
-                        slider!(cx, "Mix", mix);
-                        button!(cx, "Hard Clip Output", output_clip);
-                        slider!(cx, "Output Clip Threshold", output_clip_threshold);
-                        slider!(cx, "Input Gain", input_gain);
-                        slider!(cx, "Output Gain", output_gain);
+                    header!(cx, "Mix");
+                    slider!(cx, "Mix", mix);
+                    button!(cx, "Hard Clip Output", output_clip);
+                    slider!(cx, "Output Clip Threshold", output_clip_threshold);
+                    slider!(cx, "Input Gain", input_gain);
+                    slider!(cx, "Output Gain", output_gain);
 
-                        header!(cx, "Filter");
-                        slider!(cx, "Excess Mix", excess_mix);
-                        slider!(cx, "Filter 1 Type", f1_type);
-                        slider!(cx, "Filter 1 Freq", f1_freq);
-                        slider!(cx, "Filter 1 Q", f1_q);
-                        slider!(cx, "Filter 2 Type", f2_type);
-                        slider!(cx, "Filter 2 Freq", f2_freq);
-                        slider!(cx, "Filter 2 Q", f2_q);
-                        button!(cx, "Excess Signal Bypass", excess_bypass);
-                    })
-                    .row_between(Pixels(10.0));
-                })
-                .class("params");
+                    header!(cx, "Filter");
+                    slider!(cx, "Excess Mix", excess_mix);
+                    slider!(cx, "Filter 1 Type", f1_type);
+                    slider!(cx, "Filter 1 Freq", f1_freq);
+                    slider!(cx, "Filter 1 Q", f1_q);
+                    slider!(cx, "Filter 2 Type", f2_type);
+                    slider!(cx, "Filter 2 Freq", f2_freq);
+                    slider!(cx, "Filter 2 Q", f2_q);
+                    button!(cx, "Excess Signal Bypass", excess_bypass);
 
-                // Distortions parameter
-                ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                    // Distortions parameter
                     header!(cx, "Waveshaper");
                     slider!(cx, "Function Mix", function_mix);
                     slider!(cx, "+ Function Type", pos_function_type);
