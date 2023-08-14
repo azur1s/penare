@@ -19,7 +19,7 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (400, 700))
+    ViziaState::new(|| (450, 700))
 }
 
 // Fonts

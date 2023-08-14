@@ -31,12 +31,13 @@ param-button {
     child-left: 1s;
     child-right: 1s;
     background-color: #21272a;
-    border-color: #878d9600;
+    border-color: #878d96;
+    border-width: 0;
     color: #f2f4f8;
     transition: background-color 0.1 0;
 }
 param-button:hover {
-    background-color: #757b85;
+    background-color: #2b3236;
     transition: background-color 0.1 0;
 }
 param-button:checked {
@@ -50,7 +51,8 @@ param-button:checked:hover {
 
 param-slider {
     background-color: #21272a;
-    border-color: #878d9600;
+    border-color: #878d96;
+    border-width: 0;
     transition: background-color 0.1 0;
 }
 param-slider:hover {
