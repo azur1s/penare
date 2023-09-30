@@ -25,9 +25,12 @@ For MacOS:
 - Filter control (like which range the distortion is applied) and you can mix it back afterward :O
 
 ## Contributing
-Some of the algorithms probably is not correct so you can fix it if you think it's incorrect. Or you can add new one if you're feeling generous :D
 
-## Building
+Here's some features I want to add:
+- Presets loading/saving systems
+- Waveform visualizer
+- Filters visualizer
+- LFO/ADSR to modulate the sliders (I don't know how to do that)
 
 The [`debug.ps1`](debug.ps1) is for me to use. Although you can use it, if it works.
 
