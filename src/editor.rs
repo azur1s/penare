@@ -19,12 +19,11 @@ struct Data {
 impl Model for Data {}
 
 pub(crate) fn default_state() -> Arc<ViziaState> {
-    ViziaState::new(|| (450, 700))
+    ViziaState::new(|| (400, 700))
 }
 
 // Fonts
-const FONT_REGULAR: &[u8] = include_bytes!("../assets/CommitMono-Regular.otf");
-const FONT_BOLD: &[u8] = include_bytes!("../assets/CommitMono-Bold.otf");
+const FONT_REGULAR: &[u8] = include_bytes!("../assets/PhlattGrotesk-Regular.ttf");
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
@@ -35,9 +34,8 @@ pub(crate) fn create(
         // Add and set default fonts
         cx.add_fonts_mem(&[
             FONT_REGULAR,
-            FONT_BOLD,
         ]);
-        cx.set_default_font(&["CommitMono"]);
+        cx.set_default_font(&["Phlatt Grotesk"]);
 
         cx.add_theme(include_str!("editor/theme.css"));
 
@@ -63,13 +61,14 @@ pub(crate) fn create(
                     .child_top(Stretch(1.0))
                     .child_bottom(Stretch(1.0))
                     .col_between(Pixels(10.0))
-                    .left(Pixels(10.0))
+                    .left(Pixels(20.0))
                 };
             }
             macro_rules! slider {
                 ($cx:ident, $label:expr, $param:ident) => {
                     hstack!($cx, |cx| {
-                        ParamSlider::new(cx, Data::params, |p| &p.$param);
+                        ParamSlider::new(cx, Data::params, |p| &p.$param)
+                        .height(Pixels(36.0));
                         Label::new(cx, $label);
                     })
                 };
@@ -77,7 +76,8 @@ pub(crate) fn create(
             macro_rules! button {
                 ($cx:ident, $label:expr, $param:ident) => {
                     hstack!($cx, |cx| {
-                        ParamButton::new(cx, Data::params, |p| &p.$param);
+                        ParamButton::new(cx, Data::params, |p| &p.$param)
+                        .height(Pixels(36.0));
                         Label::new(cx, $label);
                     })
                 };
@@ -85,7 +85,7 @@ pub(crate) fn create(
             macro_rules! header {
                 ($cx:ident, $label:expr) => {
                     HStack::new($cx, |cx| {
-                        Label::new(cx, &format!("λ {}", $label));
+                        Label::new(cx, &format!("{}", $label));
                     })
                     .class("header")
                     .child_space(Stretch(1.0))
@@ -97,35 +97,35 @@ pub(crate) fn create(
             HStack::new(cx, |cx| {
                 // Input-Output related parameters
                 ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
-                    header!(cx, "Mix");
-                    slider!(cx, "Mix", mix);
-                    button!(cx, "Hard Clip Output", output_clip);
-                    slider!(cx, "Output Clip Threshold", output_clip_threshold);
-                    slider!(cx, "Input Gain", input_gain);
-                    slider!(cx, "Output Gain", output_gain);
+                    header!(cx, "mix");
+                    slider!(cx, "mix", mix);
+                    button!(cx, "hard clip output", output_clip);
+                    slider!(cx, "output clip threshold", output_clip_threshold);
+                    slider!(cx, "input gain", input_gain);
+                    slider!(cx, "output gain", output_gain);
 
-                    header!(cx, "Filter");
-                    slider!(cx, "Excess Mix", excess_mix);
-                    slider!(cx, "Filter 1 Type", f1_type);
-                    slider!(cx, "Filter 1 Freq", f1_freq);
-                    slider!(cx, "Filter 1 Q", f1_q);
-                    slider!(cx, "Filter 2 Type", f2_type);
-                    slider!(cx, "Filter 2 Freq", f2_freq);
-                    slider!(cx, "Filter 2 Q", f2_q);
-                    button!(cx, "Excess Signal Bypass", excess_bypass);
+                    header!(cx, "filter");
+                    slider!(cx, "excess mix", excess_mix);
+                    slider!(cx, "filter 1 type", f1_type);
+                    slider!(cx, "filter 1 freq", f1_freq);
+                    slider!(cx, "filter 1 q", f1_q);
+                    slider!(cx, "filter 2 type", f2_type);
+                    slider!(cx, "filter 2 freq", f2_freq);
+                    slider!(cx, "filter 2 q", f2_q);
+                    button!(cx, "excess bypass", excess_bypass);
 
                     // Distortions parameter
-                    header!(cx, "Waveshaper");
-                    slider!(cx, "Function Mix", function_mix);
-                    slider!(cx, "+ Function Type", pos_function_type);
-                    slider!(cx, "+ Function Parameter", pos_function_param);
-                    slider!(cx, "+ Function Mix", pos_function_mix);
-                    slider!(cx, "- Function Type", neg_function_type);
-                    slider!(cx, "- Function Parameter", neg_function_param);
-                    slider!(cx, "- Function Mix", neg_function_mix);
-                    slider!(cx, "Clip Sign", clip_sign);
-                    slider!(cx, "Copy From", copy_function);
-                    button!(cx, "Flip Phase", flip);
+                    header!(cx, "waveshaper");
+                    slider!(cx, "function mix", function_mix);
+                    slider!(cx, "+ function type", pos_function_type);
+                    slider!(cx, "+ function parameter", pos_function_param);
+                    slider!(cx, "+ function mix", pos_function_mix);
+                    slider!(cx, "- function type", neg_function_type);
+                    slider!(cx, "- function parameter", neg_function_param);
+                    slider!(cx, "- function mix", neg_function_mix);
+                    slider!(cx, "clip sign", clip_sign);
+                    slider!(cx, "copy from", copy_function);
+                    button!(cx, "flip phase", flip);
                 })
                 .class("params");
             })
@@ -134,9 +134,7 @@ pub(crate) fn create(
             // Footer
             HStack::new(cx, |cx| {
                 Label::new(cx, &format!(
-                    "{} - {} - v{}",
-                    crate::Penare::VENDOR,
-                    crate::Penare::NAME,
+                    "penare v{} by azur1s",
                     crate::Penare::VERSION,
                 ));
             })
