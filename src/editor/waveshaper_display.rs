@@ -112,6 +112,16 @@ impl View for WaveshaperDisplay {
                 (neg_function_type, neg_function_param, neg_function_mix)
             };
             let y = mix_between(y, ft.apply(y, fp), fm);
+            // Clip sign
+            let y = if data.get_clip_sign() {
+                if y_original >= 0.0 {
+                    y.max(0.0)
+                } else {
+                    y.min(0.0)
+                }
+            } else {
+                y
+            };
             // Flip
             let y = if data.get_flip() { -y } else { y };
             // Function mix

@@ -25,6 +25,8 @@ pub struct WaveshapersData {
     pub clip: AtomicBool,
     /// Clip threshold
     pub clip_threshold: AtomicF32,
+    /// Clip sign
+    pub clip_sign: AtomicBool,
     /// Copy functions
     pub copy: AtomicUsize,
     /// Flip phase
@@ -44,6 +46,7 @@ impl Default for WaveshapersData {
             function_mixs: [AtomicF32::new(0.0), AtomicF32::new(0.0)],
             clip: AtomicBool::new(true),
             clip_threshold: AtomicF32::new(db),
+            clip_sign: AtomicBool::new(true),
             copy: AtomicUsize::new(TriState::Off.into()),
             flip: AtomicBool::new(false),
         }
@@ -101,6 +104,7 @@ impl WaveshapersData {
     get!(function_mix   polar f32);
     get!(clip                 bool);
     get!(clip_threshold       f32);
+    get!(clip_sign            bool);
     get!(copy                 TriState);
     get!(flip                 bool);
 
@@ -112,6 +116,7 @@ impl WaveshapersData {
     set!(function_mix   polar f32);
     set!(clip                 bool);
     set!(clip_threshold       f32);
+    set!(clip_sign            bool);
     set!(copy                 TriState);
     set!(flip                 bool);
 }

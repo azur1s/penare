@@ -95,6 +95,9 @@ pub struct PenareParams {
     /// Mix
     #[id = "neg-function-mix"]
     pub neg_function_mix: FloatParam,
+    /// Clip the positive/negative function output to go out of its sign range
+    #[id = "clip-sign"]
+    pub clip_sign: BoolParam,
     /// Use function for the positive/negative shape too
     #[id = "copy-function"]
     pub copy_function: EnumParam<TriState>,
@@ -215,6 +218,7 @@ impl Default for PenareParams {
             neg_function_type:  EnumParam::new("Negative Function Type", waveshaper::FunctionType::HardClip),
             neg_function_param: db!("Negative Function Parameter", 30.0),
             neg_function_mix:   percentage!("Negative Function Mix", 1.0),
+            clip_sign:          BoolParam::new("Clip Sign", true),
             copy_function:      EnumParam::new("Copy Function", TriState::Off),
             flip:               BoolParam::new("Flip", false),
 

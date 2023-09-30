@@ -123,6 +123,7 @@ pub(crate) fn create(
                     slider!(cx, "- Function Type", neg_function_type);
                     slider!(cx, "- Function Parameter", neg_function_param);
                     slider!(cx, "- Function Mix", neg_function_mix);
+                    slider!(cx, "Clip Sign", clip_sign);
                     slider!(cx, "Copy From", copy_function);
                     button!(cx, "Flip Phase", flip);
                 })

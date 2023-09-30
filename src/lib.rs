@@ -171,11 +171,23 @@ impl Plugin for Penare {
                     self.params.neg_function_param.smoothed.next(),
                     self.params.neg_function_mix.smoothed.next())
                 };
+                // Mix between the original signal and the wave shaped signal
                 let wss = mix_between(
                     *sample,
                     ft.apply(*sample, fp),
                     fm,
                 );
+                // Clip the wave shaped signal to go out of its sign range
+                // Ex: if the wave shaped signal is positive, clip the negative part
+                let wss = if self.params.clip_sign.value() {
+                    if *sample >= 0.0 {
+                        wss.max(0.0)
+                    } else {
+                        wss.min(0.0)
+                    }
+                } else {
+                    wss
+                };
                 // Flip the phase of the signal
                 let wss = if self.params.flip.value() { -wss } else { wss };
                 *sample = mix_between(*sample, wss, self.params.function_mix.smoothed.next());
@@ -241,6 +253,7 @@ impl Penare {
         );
         waveshapers_data.set_clip(self.params.output_clip.value());
         waveshapers_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
+        waveshapers_data.set_clip_sign(self.params.clip_sign.value());
         waveshapers_data.set_copy(self.params.copy_function.value());
         waveshapers_data.set_flip(self.params.flip.value());
     }
