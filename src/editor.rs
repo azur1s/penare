@@ -135,7 +135,7 @@ pub(crate) fn create(
             HStack::new(cx, |cx| {
                 Label::new(cx, &format!(
                     "penare v{} by azur1s",
-                    crate::Penare::VERSION,
+                    env!("CARGO_PKG_VERSION")
                 ));
             })
             .class("footer")
