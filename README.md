@@ -2,7 +2,7 @@
 
 A free wonky distortion plugin :3
 
-![UI](assets/ui_0.2.0.png)
+![UI](assets/ui_0.2.1.png)
 
 ## Installing
 For Windows:
