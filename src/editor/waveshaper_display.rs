@@ -35,7 +35,7 @@ impl View for WaveshaperDisplay {
             return;
         }
 
-        // Get waveshaper data
+        // Get UI data
         let data = self.ui_data.lock().unwrap();
         let pos_function_type  = data.get_pos_function_type();
         let neg_function_type  = data.get_neg_function_type();
@@ -43,6 +43,8 @@ impl View for WaveshaperDisplay {
         let neg_function_param = data.get_neg_function_param();
         let pos_function_mix   = data.get_pos_function_mix();
         let neg_function_mix   = data.get_neg_function_mix();
+
+        let waveform = data.get_waveform();
 
         // Calculate commonly used variables
         let line_width = cx.style.dpi_factor as f32 * 1.5;
@@ -73,6 +75,31 @@ impl View for WaveshaperDisplay {
         path.move_to(0.0, 1.0 * a * scale.recip() + a);
         path.line_to(bounds.w, 1.0 * a * scale.recip() + a);
 
+        canvas.stroke_path(&mut path, &paint);
+
+        // Scale the waveform (from its length to the width) so that it fits in the display
+        let waveform_scale = bounds.w / waveform[0].len() as f32;
+
+        // Draw waveform
+        let mut path = vg::Path::new();
+        let paint = vg::Paint::color(cx.caret_color().cloned().unwrap_or_default().into())
+            .with_line_width(line_width);
+
+        for x in 0..(bounds.w as usize) {
+            let x = x as f32;
+            let i = (x / waveform_scale) as usize;
+            if i >= waveform[0].len() {
+                break;
+            }
+            let y = waveform[0][i];
+            let y = bounds.h - (y * a * scale.recip() + a);
+            if x == 0.0 {
+                path.move_to(x as f32, y);
+            } else {
+                path.line_to(x as f32, y);
+            }
+        }
+
         // Sin function scaled to width to show only one period
         let sin = |x: f32| (-x * PI / (0.5 * bounds.w)).sin();
 
@@ -97,9 +124,9 @@ impl View for WaveshaperDisplay {
         // Draw waveshaped sin function
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
-            let y_original = sin(x);
             // Sin function
-            let y = y_original * data.get_input_gain();
+            let y_original = sin(x);
+            let y = y_original;
             // Apply function
             let (ft, fp, fm) = if match (data.get_copy().is_on(), data.get_copy().is_positive(), -y >= 0.0) {
                 (true,  true,  _   ) => true,
@@ -131,7 +158,7 @@ impl View for WaveshaperDisplay {
                 hard_clip(y, data.get_clip_threshold())
             } else {
                 y
-            } * data.get_output_gain();
+            };
             // Scale Y axis to view
             let y = y * a * scale.recip() + a;
             // Draw

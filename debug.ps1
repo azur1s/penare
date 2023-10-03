@@ -19,5 +19,7 @@ if ($to -eq $null) {
     exit 0
 }
 gsudo Copy-Item $build $to -Force
+# Set "NIH_LOG" environment variable to a file path
+$env:NIH_LOG = "$pwd/penare.log"
 # Open Ableton
 Start-Process "C:\ProgramData\Ableton\Live 11 Suite\Program\Ableton Live 11 Suite.exe"

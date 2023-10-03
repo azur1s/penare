@@ -18,7 +18,7 @@ struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
     // Waveshapers Data (for the UI)
-    waveshapers_data: Arc<Mutex<UIData>>,
+    ui_data: Arc<Mutex<UIData>>,
     // Filters
     f1: [filter::Biquad; 2],
     f2: [filter::Biquad; 2],
@@ -29,7 +29,7 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
-            waveshapers_data: Arc::new(Mutex::new(UIData::default())),
+            ui_data: Arc::new(Mutex::new(UIData::default())),
             f1: [filter::Biquad::default(); 2],
             f2: [filter::Biquad::default(); 2],
         }
@@ -72,7 +72,7 @@ impl Plugin for Penare {
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         editor::create(
             self.params.clone(),
-            self.waveshapers_data.clone(),
+            self.ui_data.clone(),
             self.params.editor_state.clone(),
         )
     }
@@ -85,7 +85,7 @@ impl Plugin for Penare {
     ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
 
-        self.update_waveshapers_data();
+        self.update_ui_data(&[0.0, 0.0]);
 
         for filter in &mut self.f1 {
             filter.sample_rate = self.sample_rate;
@@ -136,6 +136,7 @@ impl Plugin for Penare {
             //     │
             //   Output
 
+            let mut samples: [f32; 2] = [0.0, 0.0];
             for (channel_idx, sample) in channel_samples.into_iter().enumerate() {
                 let dry = *sample;
                 // --- Filter ---
@@ -220,11 +221,15 @@ impl Plugin for Penare {
                         self.params.output_clip_threshold.smoothed.next(),
                     );
                 }
+
+                if channel_idx == 0 || channel_idx == 1 {
+                    samples[channel_idx] = *sample;
+                }
             }
 
             // Only calculate the UI-related data if the editor is open.
             if self.params.editor_state.is_open() {
-                self.update_waveshapers_data();
+                self.update_ui_data(&samples);
             }
         }
 
@@ -234,28 +239,30 @@ impl Plugin for Penare {
 
 impl Penare {
     /// Update waveshapers data to be sent to the UI
-    fn update_waveshapers_data(&mut self) {
-        let waveshapers_data = self.waveshapers_data.lock().unwrap();
-        waveshapers_data.set_mix(self.params.function_mix.smoothed.next());
-        waveshapers_data.set_input_gain(self.params.input_gain.smoothed.next());
-        waveshapers_data.set_output_gain(self.params.output_gain.smoothed.next());
-        waveshapers_data.set_function_types(
+    fn update_ui_data(&mut self, samples: &[f32; 2]) {
+        let ui_data = self.ui_data.lock().unwrap();
+        ui_data.set_mix(self.params.function_mix.smoothed.next());
+        ui_data.set_input_gain(self.params.input_gain.smoothed.next());
+        ui_data.set_output_gain(self.params.output_gain.smoothed.next());
+        ui_data.set_function_types(
             self.params.pos_function_type.value(),
             self.params.neg_function_type.value()
         );
-        waveshapers_data.set_function_params(
+        ui_data.set_function_params(
             self.params.pos_function_param.smoothed.next(),
             self.params.neg_function_param.smoothed.next()
         );
-        waveshapers_data.set_function_mixs(
+        ui_data.set_function_mixs(
             self.params.pos_function_mix.smoothed.next(),
             self.params.neg_function_mix.smoothed.next()
         );
-        waveshapers_data.set_clip(self.params.output_clip.value());
-        waveshapers_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
-        waveshapers_data.set_clip_sign(self.params.clip_sign.value());
-        waveshapers_data.set_copy(self.params.copy_function.value());
-        waveshapers_data.set_flip(self.params.flip.value());
+        ui_data.set_clip(self.params.output_clip.value());
+        ui_data.set_clip_threshold(self.params.output_clip_threshold.smoothed.next());
+        ui_data.set_clip_sign(self.params.clip_sign.value());
+        ui_data.set_copy(self.params.copy_function.value());
+        ui_data.set_flip(self.params.flip.value());
+
+        ui_data.add_waveform(samples);
     }
 
     /// Update filters (when parameters change)

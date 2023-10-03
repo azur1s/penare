@@ -2,6 +2,7 @@ waveshaper-display {
     background-color: #222324;
     border-color: #848483;
     color: #ff5353;
+    caret-color: #f7f7f7;
 }
 
 param-button {

@@ -1,10 +1,14 @@
 use crate::{fxs::waveshaper::FunctionType, params::TriState};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc, Mutex};
 use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
 use paste::paste;
 
 pub struct UIData {
+    // ──────────────────────────────
+    // Waveshaper
+    // ──────────────────────────────
+
     /// Wet mix
     pub mix: AtomicF32,
     /// Input gain
@@ -31,6 +35,11 @@ pub struct UIData {
     pub copy: AtomicUsize,
     /// Flip phase
     pub flip: AtomicBool,
+
+    // ──────────────────────────────
+    // Waveform
+    // ──────────────────────────────
+    pub waveform: Arc<Mutex<[Vec<f32>; 2]>>,
 }
 
 impl Default for UIData {
@@ -49,6 +58,7 @@ impl Default for UIData {
             clip_sign: AtomicBool::new(true),
             copy: AtomicUsize::new(TriState::Off.into()),
             flip: AtomicBool::new(false),
+            waveform: Arc::new(Mutex::new([Vec::with_capacity(1024), Vec::with_capacity(1024)])),
         }
     }
 }
@@ -107,6 +117,10 @@ impl UIData {
     get!(clip_sign            bool);
     get!(copy                 TriState);
     get!(flip                 bool);
+    pub fn get_waveform(&self) -> [Vec<f32>; 2] {
+        let waveform = self.waveform.lock().unwrap();
+        [waveform[0].clone(), waveform[1].clone()]
+    }
 
     set!(mix                  f32);
     set!(input_gain           f32);
@@ -119,4 +133,19 @@ impl UIData {
     set!(clip_sign            bool);
     set!(copy                 TriState);
     set!(flip                 bool);
+    pub fn add_waveform(&self, new_samples: &[f32; 2]) {
+        let mut waveform = self.waveform.lock().unwrap();
+        let l = new_samples[0];
+        let r = new_samples[1];
+
+        if waveform[0].len() < waveform[0].capacity() {
+            waveform[0].push(l);
+            waveform[1].push(r);
+        } else {
+            waveform[0].remove(0);
+            waveform[1].remove(0);
+            waveform[0].push(l);
+            waveform[1].push(r);
+        }
+    }
 }
