@@ -7,7 +7,7 @@ mod editor;
 mod fxs;
 
 use params::PenareParams;
-use data::WaveshapersData;
+use data::UIData;
 use fxs::{
     filter,
     waveshaper,
@@ -18,7 +18,7 @@ struct Penare {
     params: Arc<PenareParams>,
     sample_rate: f32,
     // Waveshapers Data (for the UI)
-    waveshapers_data: Arc<Mutex<WaveshapersData>>,
+    waveshapers_data: Arc<Mutex<UIData>>,
     // Filters
     f1: [filter::Biquad; 2],
     f2: [filter::Biquad; 2],
@@ -29,7 +29,7 @@ impl Default for Penare {
         Self {
             params: Arc::new(PenareParams::default()),
             sample_rate: 1.0,
-            waveshapers_data: Arc::new(Mutex::new(WaveshapersData::default())),
+            waveshapers_data: Arc::new(Mutex::new(UIData::default())),
             f1: [filter::Biquad::default(); 2],
             f2: [filter::Biquad::default(); 2],
         }

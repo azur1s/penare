@@ -1,4 +1,4 @@
-use crate::{PenareParams, data::WaveshapersData};
+use crate::{PenareParams, data::UIData};
 use std::sync::{Arc, Mutex};
 use nih_plug::prelude::*;
 use nih_plug_vizia::{
@@ -13,7 +13,7 @@ mod waveshaper_display;
 #[derive(Lens)]
 struct Data {
     params: Arc<PenareParams>,
-    waveshaper_data: Arc<Mutex<WaveshapersData>>,
+    ui_data: Arc<Mutex<UIData>>,
 }
 
 impl Model for Data {}
@@ -27,7 +27,7 @@ const FONT_REGULAR: &[u8] = include_bytes!("../assets/PhlattGrotesk-Regular.ttf"
 
 pub(crate) fn create(
     params: Arc<PenareParams>,
-    waveshaper_data: Arc<Mutex<WaveshapersData>>,
+    ui_data: Arc<Mutex<UIData>>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, nih_plug_vizia::ViziaTheming::Custom, move |cx, _| {
@@ -41,7 +41,7 @@ pub(crate) fn create(
 
         Data {
             params: params.clone(),
-            waveshaper_data: waveshaper_data.clone(),
+            ui_data: ui_data.clone(),
         }.build(cx);
 
         ResizeHandle::new(cx);
@@ -49,7 +49,7 @@ pub(crate) fn create(
         VStack::new(cx, |cx| {
             waveshaper_display::WaveshaperDisplay::new(
                 cx,
-                Data::waveshaper_data,
+                Data::ui_data,
             )
             .width(Percentage(100.0))
             .height(Pixels(100.0));

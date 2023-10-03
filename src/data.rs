@@ -4,7 +4,7 @@ use atomic_float::AtomicF32;
 use nih_plug::prelude::*;
 use paste::paste;
 
-pub struct WaveshapersData {
+pub struct UIData {
     /// Wet mix
     pub mix: AtomicF32,
     /// Input gain
@@ -33,7 +33,7 @@ pub struct WaveshapersData {
     pub flip: AtomicBool,
 }
 
-impl Default for WaveshapersData {
+impl Default for UIData {
     fn default() -> Self {
         let f = FunctionType::HardClip.into();
         let db = util::db_to_gain(0.0);
@@ -95,7 +95,7 @@ macro_rules! set {
 }
 
 #[allow(dead_code)]
-impl WaveshapersData {
+impl UIData {
     get!(mix                  f32);
     get!(input_gain           f32);
     get!(output_gain          f32);

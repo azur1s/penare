@@ -1,4 +1,4 @@
-use crate::{fxs::utils::{hard_clip, mix_between}, data::WaveshapersData};
+use crate::{fxs::utils::{hard_clip, mix_between}, data::UIData};
 use std::{
     f32::consts::PI,
     sync::{Arc, Mutex},
@@ -7,19 +7,19 @@ use nih_plug_vizia::vizia::{prelude::*, vg};
 
 pub struct WaveshaperDisplay {
     /// Reference to the waveshapers data
-    waveshaper_data: Arc<Mutex<WaveshapersData>>,
+    ui_data: Arc<Mutex<UIData>>,
 }
 
 impl WaveshaperDisplay {
     /// Create a new waveshaper display
-    pub fn new<LWaveshapersData>(
+    pub fn new<LUIData>(
         cx: &mut Context,
-        waveshaper_data: LWaveshapersData,
+        ui_data: LUIData,
     ) -> Handle<Self> where 
-        LWaveshapersData: Lens<Target = Arc<Mutex<WaveshapersData>>>,
+        LUIData: Lens<Target = Arc<Mutex<UIData>>>,
     {
         Self {
-            waveshaper_data: waveshaper_data.get(cx),
+            ui_data: ui_data.get(cx),
         }.build(cx, |_cx| ())
     }
 }
@@ -36,7 +36,7 @@ impl View for WaveshaperDisplay {
         }
 
         // Get waveshaper data
-        let data = self.waveshaper_data.lock().unwrap();
+        let data = self.ui_data.lock().unwrap();
         let pos_function_type  = data.get_pos_function_type();
         let neg_function_type  = data.get_neg_function_type();
         let pos_function_param = data.get_pos_function_param();
