@@ -100,21 +100,6 @@ impl View for WaveshaperDisplay {
             }
         }
 
-        // Sin function scaled to width to show only one period
-        let sin = |x: f32| (-x * PI / (0.5 * bounds.w)).sin();
-
-        // Draw normal sin function
-        for x in 0..(bounds.w as usize) {
-            let x = x as f32;
-            let y = sin(x);
-            let y = y * a * scale.recip() + a;
-            if x == 0.0 {
-                path.move_to(x as f32, y);
-            } else {
-                path.line_to(x as f32, y);
-            }
-        }
-
         canvas.stroke_path(&mut path, &paint);
 
         let mut path = vg::Path::new();
@@ -125,7 +110,7 @@ impl View for WaveshaperDisplay {
         for x in 0..(bounds.w as usize) {
             let x = x as f32;
             // Sin function
-            let y_original = sin(x);
+            let y_original = (-x * PI / (0.5 * bounds.w)).sin();
             let y = y_original;
             // Apply function
             let (ft, fp, fm) = if match (data.get_copy().is_on(), data.get_copy().is_positive(), -y >= 0.0) {

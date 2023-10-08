@@ -46,6 +46,10 @@ impl Default for UIData {
     fn default() -> Self {
         let f = FunctionType::HardClip.into();
         let db = util::db_to_gain(0.0);
+        let mut l_waveform = Vec::with_capacity(1024);
+        l_waveform.resize(1024, 0.0);
+        let mut r_waveform = Vec::with_capacity(1024);
+        r_waveform.resize(1024, 0.0);
         Self {
             mix: AtomicF32::new(1.0),
             input_gain: AtomicF32::new(db),
@@ -58,7 +62,7 @@ impl Default for UIData {
             clip_sign: AtomicBool::new(true),
             copy: AtomicUsize::new(TriState::Off.into()),
             flip: AtomicBool::new(false),
-            waveform: Arc::new(Mutex::new([Vec::with_capacity(1024), Vec::with_capacity(1024)])),
+            waveform: Arc::new(Mutex::new([l_waveform, r_waveform])),
         }
     }
 }
@@ -138,14 +142,9 @@ impl UIData {
         let l = new_samples[0];
         let r = new_samples[1];
 
-        if waveform[0].len() < waveform[0].capacity() {
-            waveform[0].push(l);
-            waveform[1].push(r);
-        } else {
-            waveform[0].remove(0);
-            waveform[1].remove(0);
-            waveform[0].push(l);
-            waveform[1].push(r);
-        }
+        waveform[0].remove(0);
+        waveform[1].remove(0);
+        waveform[0].push(l);
+        waveform[1].push(r);
     }
 }
