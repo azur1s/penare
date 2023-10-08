@@ -95,24 +95,14 @@ pub(crate) fn create(
             }
 
             HStack::new(cx, |cx| {
-                // Input-Output related parameters
                 ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                    // Input-Output related parameters
                     header!(cx, "mix");
                     slider!(cx, "mix", mix);
                     button!(cx, "hard clip output", output_clip);
                     slider!(cx, "output clip threshold", output_clip_threshold);
                     slider!(cx, "input gain", input_gain);
                     slider!(cx, "output gain", output_gain);
-
-                    header!(cx, "filter");
-                    slider!(cx, "excess mix", excess_mix);
-                    slider!(cx, "filter 1 type", f1_type);
-                    slider!(cx, "filter 1 freq", f1_freq);
-                    slider!(cx, "filter 1 q", f1_q);
-                    slider!(cx, "filter 2 type", f2_type);
-                    slider!(cx, "filter 2 freq", f2_freq);
-                    slider!(cx, "filter 2 q", f2_q);
-                    button!(cx, "excess bypass", excess_bypass);
 
                     // Distortions parameter
                     header!(cx, "waveshaper");
@@ -126,6 +116,17 @@ pub(crate) fn create(
                     slider!(cx, "clip sign", clip_sign);
                     slider!(cx, "copy from", copy_function);
                     button!(cx, "flip phase", flip);
+
+                    // Filters parameters
+                    header!(cx, "filter");
+                    slider!(cx, "excess mix", excess_mix);
+                    slider!(cx, "filter 1 type", f1_type);
+                    slider!(cx, "filter 1 freq", f1_freq);
+                    slider!(cx, "filter 1 q", f1_q);
+                    slider!(cx, "filter 2 type", f2_type);
+                    slider!(cx, "filter 2 freq", f2_freq);
+                    slider!(cx, "filter 2 q", f2_q);
+                    button!(cx, "excess bypass", excess_bypass);
                 })
                 .class("params");
             })

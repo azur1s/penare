@@ -44,8 +44,6 @@ impl View for WaveshaperDisplay {
         let pos_function_mix   = data.get_pos_function_mix();
         let neg_function_mix   = data.get_neg_function_mix();
 
-        let waveform = data.get_waveform();
-
         // Calculate commonly used variables
         let line_width = cx.style.dpi_factor as f32 * 1.5;
         // 1 <= scale <= 2;
@@ -58,47 +56,15 @@ impl View for WaveshaperDisplay {
         path.rect(0.0, 0.0, bounds.w, bounds.h);
         canvas.fill_path(&mut path, &paint);
 
-        // Draw x and y axis
+        // Draw [-1, 1] dB lines
         let mut path = vg::Path::new();
         let paint = vg::Paint::color(cx.border_color().cloned().unwrap_or_default().into())
             .with_line_width(line_width);
-        // X axis
-        path.move_to(0.0, bounds.h * 0.5);
-        path.line_to(bounds.w, bounds.h * 0.5);
-        // Y axis
-        path.move_to(bounds.w * 0.5, 0.0);
-        path.line_to(bounds.w * 0.5, bounds.h);
 
-        // Draw [-1, 1] dB lines
         path.move_to(0.0, -1.0 * a * scale.recip() + a);
         path.line_to(bounds.w, -1.0 * a * scale.recip() + a);
         path.move_to(0.0, 1.0 * a * scale.recip() + a);
         path.line_to(bounds.w, 1.0 * a * scale.recip() + a);
-
-        canvas.stroke_path(&mut path, &paint);
-
-        // Scale the waveform (from its length to the width) so that it fits in the display
-        let waveform_scale = bounds.w / waveform[0].len() as f32;
-
-        // Draw waveform
-        let mut path = vg::Path::new();
-        let paint = vg::Paint::color(cx.caret_color().cloned().unwrap_or_default().into())
-            .with_line_width(line_width);
-
-        for x in 0..(bounds.w as usize) {
-            let x = x as f32;
-            let i = (x / waveform_scale) as usize;
-            if i >= waveform[0].len() {
-                break;
-            }
-            let y = waveform[0][i];
-            let y = bounds.h - (y * a * scale.recip() + a);
-            if x == 0.0 {
-                path.move_to(x as f32, y);
-            } else {
-                path.line_to(x as f32, y);
-            }
-        }
 
         canvas.stroke_path(&mut path, &paint);
 

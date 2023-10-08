@@ -85,7 +85,7 @@ impl Plugin for Penare {
     ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
 
-        self.update_ui_data(&[0.0, 0.0]);
+        self.update_ui_data();
 
         for filter in &mut self.f1 {
             filter.sample_rate = self.sample_rate;
@@ -229,7 +229,7 @@ impl Plugin for Penare {
 
             // Only calculate the UI-related data if the editor is open.
             if self.params.editor_state.is_open() {
-                self.update_ui_data(&samples);
+                self.update_ui_data();
             }
         }
 
@@ -239,7 +239,7 @@ impl Plugin for Penare {
 
 impl Penare {
     /// Update waveshapers data to be sent to the UI
-    fn update_ui_data(&mut self, samples: &[f32; 2]) {
+    fn update_ui_data(&mut self) {
         let ui_data = self.ui_data.lock().unwrap();
         ui_data.set_mix(self.params.function_mix.smoothed.next());
         ui_data.set_input_gain(self.params.input_gain.smoothed.next());
@@ -261,8 +261,6 @@ impl Penare {
         ui_data.set_clip_sign(self.params.clip_sign.value());
         ui_data.set_copy(self.params.copy_function.value());
         ui_data.set_flip(self.params.flip.value());
-
-        ui_data.add_waveform(samples);
     }
 
     /// Update filters (when parameters change)
