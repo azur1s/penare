@@ -30,6 +30,8 @@ pub enum FunctionType {
     Singlefold,
     // sign(x) * (4|x| / T) * |((|x| - T/4) % T) - T/2|
     Sillyfold,
+    // Kinda like Oxford Inflator
+    Inflate,
     // Bitcrushers
     Floor,
     Round,
@@ -74,6 +76,19 @@ impl FunctionType {
                 x          => x,
             },
             Sillyfold => sig * 4.0 * xa / t * (((xa - t * 0.25) % t) - t * 0.5).abs(),
+            Inflate   => sig * {
+                let t = gain_to_db(t) * 5.0;
+                let a = 1.0 + (t + 50.0) / 100.0;
+                let b = -t / 50.0;
+                let c = (t - 50.0) / 100.0;
+                let d = (1.0 / 16.0) - (t / 400.0) + ((t * t) / (4.0 * 100.0 * 100.0));
+
+                let x2 = xa * xa;
+                let x3 = x2 * xa;
+                let x4 = x3 * xa;
+
+                a * xa + b * x2 + c * x3 - d * (x2 - 2.0 * x3 + x4)
+            },
             Floor     => sig * ((x * sig * t.abs()).floor() / t).abs(),
             Round     => sig * ((x * sig * t.abs()).round() / t).abs(),
             Bitcrush => {
@@ -107,9 +122,10 @@ impl std::fmt::Display for FunctionType {
             FunctionType::ReciprocalTanh => write!(f, "ReciprocalTanh"),
             FunctionType::TanhTwoAtanh   => write!(f, "Tanh2Atanh"),
             FunctionType::Sinusoidal     => write!(f, "Sinusoidal"),
+            FunctionType::BrokenSin      => write!(f, "BrokenSin"),
             FunctionType::Singlefold     => write!(f, "Singlefold"),
             FunctionType::Sillyfold      => write!(f, "Sillyfold"),
-            FunctionType::BrokenSin      => write!(f, "BrokenSin"),
+            FunctionType::Inflate        => write!(f, "Inflate"),
             FunctionType::Floor          => write!(f, "Floor"),
             FunctionType::Round          => write!(f, "Round"),
             FunctionType::Bitcrush       => write!(f, "Bitcrush"),
